@@ -1,99 +1,79 @@
-import { useRef, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useThemeStore } from '../../stores';
 
 /**
- * Golden Hour sky — a warm, inviting gradient from soft indigo at the zenith
- * through rose and coral to a golden peach horizon, with a soft sun glow.
+ * Golden Hour sky — softer, more cohesive palette with fewer harsh color bands.
+ * Sun glow positioned low on the horizon to avoid washing out center text.
  */
 const SunsetSky = () => {
-  const meshRef = useRef<THREE.Mesh>(null);
   const theme = useThemeStore((state) => state.theme);
 
   const uniforms = useMemo(
     () => ({
-      // Golden Hour palette
-      uTopColor: { value: new THREE.Color('#1a2744') },       // deep soft blue
-      uUpperColor: { value: new THREE.Color('#3d3068') },     // muted purple
-      uMidColor: { value: new THREE.Color('#b5586e') },       // dusty rose
-      uWarmColor: { value: new THREE.Color('#e89060') },      // peachy coral
-      uHorizonColor: { value: new THREE.Color('#ffc878') },   // warm golden
-      uSunColor: { value: new THREE.Color('#fff5e0') },       // soft white-gold
-      uSunPosition: { value: new THREE.Vector2(0.5, 0.12) },
-      uTime: { value: 0 },
-      uNightMix: { value: 0 },
+      uTopColor: { value: new THREE.Color('#192038') },
+      uMidColor: { value: new THREE.Color('#5c4a6e') },
+      uWarmColor: { value: new THREE.Color('#d4896a') },
+      uHorizonColor: { value: new THREE.Color('#e8b06a') },
+      uSunColor: { value: new THREE.Color('#fff0d0') },
+      uSunDir: { value: new THREE.Vector3(0, -0.15, -1).normalize() },
+      // Start at correct value to prevent flash
+      uNightMix: { value: theme.type === 'night' ? 1.0 : 0.0 },
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
   useFrame((_, delta) => {
-    uniforms.uTime.value += delta * 0.05;
-
-    // Smoothly interpolate night mix
     const targetNight = theme.type === 'night' ? 1.0 : 0.0;
     uniforms.uNightMix.value += (targetNight - uniforms.uNightMix.value) * delta * 3;
-    // Snap to target when very close
     if (Math.abs(uniforms.uNightMix.value - targetNight) < 0.005) {
       uniforms.uNightMix.value = targetNight;
     }
   });
 
   const vertexShader = `
-    varying vec2 vUv;
+    varying vec3 vWorldDir;
     void main() {
-      vUv = uv;
+      vWorldDir = normalize(position);
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
   `;
 
   const fragmentShader = `
     uniform vec3 uTopColor;
-    uniform vec3 uUpperColor;
     uniform vec3 uMidColor;
     uniform vec3 uWarmColor;
     uniform vec3 uHorizonColor;
     uniform vec3 uSunColor;
-    uniform vec2 uSunPosition;
-    uniform float uTime;
+    uniform vec3 uSunDir;
     uniform float uNightMix;
-    varying vec2 vUv;
+    varying vec3 vWorldDir;
 
     void main() {
-      float y = vUv.y;
+      vec3 dir = normalize(vWorldDir);
+      float h = dir.y * 0.5 + 0.5; // 0 = bottom, 1 = top
 
-      // 5-stop smooth gradient (golden hour)
+      // Simple 3-stop gradient with smooth blending (fewer bands = more cohesive)
       vec3 color;
-      if (y < 0.12) {
-        color = mix(uHorizonColor, uWarmColor, y / 0.12);
-      } else if (y < 0.3) {
-        color = mix(uWarmColor, uMidColor, (y - 0.12) / 0.18);
-      } else if (y < 0.5) {
-        color = mix(uMidColor, uUpperColor, (y - 0.3) / 0.2);
-      } else {
-        color = mix(uUpperColor, uTopColor, (y - 0.5) / 0.5);
-      }
+      color = mix(uHorizonColor, uWarmColor, smoothstep(0.35, 0.48, h));
+      color = mix(color, uMidColor, smoothstep(0.46, 0.56, h));
+      color = mix(color, uTopColor, smoothstep(0.54, 0.78, h));
 
-      // Soft sun glow near horizon
-      float sunDist = distance(vec2(vUv.x, y), uSunPosition);
-      float sunGlow = exp(-sunDist * 6.0) * 0.5;
-      float sunCore = exp(-sunDist * 25.0) * 0.3;
+      // Soft sun glow — lower on horizon, wide and gentle
+      float sunAngle = max(dot(dir, uSunDir), 0.0);
+      float sunGlow = pow(sunAngle, 6.0) * 0.35;
+      float sunCore = pow(sunAngle, 48.0) * 0.2;
       color += uSunColor * (sunGlow + sunCore);
 
-      // Warm atmospheric haze at horizon
-      float haze = exp(-y * 5.0) * 0.1;
-      color += vec3(1.0, 0.9, 0.7) * haze;
+      // Very subtle horizon haze
+      float horizonProximity = 1.0 - abs(dir.y);
+      float haze = pow(horizonProximity, 5.0) * 0.05;
+      color += vec3(1.0, 0.92, 0.78) * haze;
 
-      // Night mode: lerp to dark blue-black sky
-      vec3 nightTop = vec3(0.02, 0.02, 0.06);
-      vec3 nightMid = vec3(0.04, 0.03, 0.08);
-      vec3 nightBottom = vec3(0.06, 0.04, 0.1);
-      vec3 nightColor;
-      if (y < 0.3) {
-        nightColor = mix(nightBottom, nightMid, y / 0.3);
-      } else {
-        nightColor = mix(nightMid, nightTop, (y - 0.3) / 0.7);
-      }
+      // Night mode
+      vec3 nightColor = mix(vec3(0.05, 0.04, 0.09), vec3(0.02, 0.02, 0.05), smoothstep(0.4, 0.8, h));
       color = mix(color, nightColor, uNightMix);
 
       gl_FragColor = vec4(color, 1.0);
@@ -101,7 +81,7 @@ const SunsetSky = () => {
   `;
 
   return (
-    <mesh ref={meshRef} scale={[-1, 1, 1]}>
+    <mesh scale={[-1, 1, 1]}>
       <sphereGeometry args={[500, 64, 64]} />
       <shaderMaterial
         vertexShader={vertexShader}

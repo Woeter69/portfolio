@@ -7,13 +7,15 @@ interface Theme {
 }
 
 const AvailableThemes: Theme[] = [
-  { type: 'sunset', color: '#c27058' },   // warm rose-coral to match golden hour mid-tones
-  { type: 'night', color: '#080810' },     // deep dark blue-black
+  { type: 'sunset', color: '#c27058' },
+  { type: 'night', color: '#080810' },
 ];
 
 interface ThemeStore {
   themes: Theme[];
   theme: Theme;
+  hasHydrated: boolean;
+  setHasHydrated: (v: boolean) => void;
   nextTheme: () => void;
 }
 
@@ -22,6 +24,8 @@ export const useThemeStore = create<ThemeStore>()(
     (set, get) => ({
       themes: [...AvailableThemes],
       theme: AvailableThemes[0],
+      hasHydrated: false,
+      setHasHydrated: (v: boolean) => set({ hasHydrated: v }),
       nextTheme: () => {
         const themes = get().themes;
         const activeIndex = themes.findIndex((t) => t.type === get().theme.type);
@@ -32,6 +36,9 @@ export const useThemeStore = create<ThemeStore>()(
     {
       name: 'theme-storage',
       partialize: (state) => ({ theme: state.theme }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

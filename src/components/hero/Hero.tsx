@@ -48,26 +48,21 @@ const Hero = () => {
       {/* Sky */}
       <SunsetSky />
 
-      {/* Lighting */}
-      <ambientLight intensity={0.4} color="#4a3060" />
-      <directionalLight
-        position={[0, 2, -10]}
-        intensity={1.5}
-        color="#FFA500"
-        castShadow
-      />
-      <pointLight position={[5, 5, -5]} intensity={0.8} color="#FF6B35" />
+      {/* Soft ambient lighting for text visibility */}
+      <ambientLight intensity={0.6} color="#ffeedd" />
 
       {/* Title */}
       <Text
         ref={titleRef}
         position={[0, -10, -10]}
         fontSize={1.2}
-        color="#FFF8F0"
+        color="#ffffff"
         font="./outfit.ttf"
         anchorX="center"
         anchorY="middle"
         fillOpacity={0}
+        outlineWidth={0.02}
+        outlineColor="#00000030"
       >
         Hi, I am Woeter.
       </Text>
@@ -77,12 +72,14 @@ const Hero = () => {
         ref={subtitleRef}
         position={[0, -12, -10]}
         fontSize={0.4}
-        color="rgba(255, 248, 240, 0.7)"
+        color="rgba(255, 255, 255, 0.85)"
         font="./space-grotesk.ttf"
         anchorX="center"
         anchorY="middle"
         letterSpacing={0.15}
         fillOpacity={0}
+        outlineWidth={0.01}
+        outlineColor="#00000020"
       >
         DEVELOPER • RESEARCHER • CREATIVE
       </Text>

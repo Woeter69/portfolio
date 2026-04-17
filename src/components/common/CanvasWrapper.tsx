@@ -18,16 +18,20 @@ interface CanvasWrapperProps {
 const CanvasWrapper = ({ children }: CanvasWrapperProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isFirstRender = useRef(true);
   const backgroundColor = useThemeStore((state) => state.theme.color);
 
   useEffect(() => {
+    const duration = isFirstRender.current ? 0 : 1;
+    isFirstRender.current = false;
+
     gsap.to(containerRef.current, {
       backgroundColor: backgroundColor,
-      duration: 1,
+      duration,
     });
     gsap.to(canvasRef.current, {
       backgroundColor: backgroundColor,
-      duration: 1,
+      duration,
     });
   }, [backgroundColor]);
 

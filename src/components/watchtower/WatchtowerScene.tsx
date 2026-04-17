@@ -6,7 +6,7 @@ import WatchtowerModel from './WatchtowerModel';
  */
 const WatchtowerScene = () => {
   return (
-    <group position={[0, -35, -25]}>
+    <group position={[0, -45, -25]} rotation={[0, Math.PI, 0]}>
       {/* Warm directional light (golden hour angle) */}
       <directionalLight
         position={[-8, 15, -5]}

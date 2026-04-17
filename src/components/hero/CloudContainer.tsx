@@ -9,7 +9,7 @@ const CloudContainer = () => {
   return (
     <Clouds
       material={THREE.MeshBasicMaterial}
-      position={[0, -5, 0]}
+      position={[0, -2, 0]}
       frustumCulled={false}
     >
       {/* Main large cloud cluster - center */}

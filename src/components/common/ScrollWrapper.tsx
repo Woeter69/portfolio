@@ -10,26 +10,30 @@ interface ScrollWrapperProps {
 /**
  * Multi-phase scroll-driven camera controller.
  * 
- * Phase 1 (0.0–0.25): Hero view — gentle tilt down + parallax
- * Phase 2 (0.25–0.50): Descend through clouds toward the tower
- * Phase 3 (0.50–0.75): Approach the tower cabin at eye level  
- * Phase 4 (0.75–1.0): Enter through the door into the cabin
+ * Phase 1 (0.0–0.15): Hero view
+ * Phase 2 (0.15–0.50): Drop STRAIGHT DOWN (only y changes, z stays)
+ * Phase 3 (0.50–1.0): Level off at door height, go STRAIGHT AHEAD (only z changes)
  */
 
-// Camera keyframes: [scroll, posX, posY, posZ, lookX, lookY, lookZ]
+// Camera path — z also moves forward during descent for a cinematic feel
 const KEYFRAMES = [
-  { t: 0.00, pos: [0, 5, 5],     look: [0, 2, -10] },      // Hero — looking at text
-  { t: 0.15, pos: [0, 3, 3],     look: [0, 0, -15] },      // Tilt down slightly
-  { t: 0.30, pos: [0, -5, -5],   look: [0, -15, -25] },    // Through clouds, tower appears
-  { t: 0.45, pos: [0, -15, -12], look: [0, -23, -25] },    // Tower fully visible
-  { t: 0.60, pos: [0, -20, -18], look: [0, -23, -25] },    // Approaching cabin level
-  { t: 0.75, pos: [0, -22.5, -23],look: [0, -23, -27] },   // At the door
-  { t: 0.88, pos: [0, -22.8, -25.5], look: [0, -22.8, -28] }, // Entering
-  { t: 1.00, pos: [0, -22.5, -27], look: [0, -22.5, -30] },  // Inside cabin
+  // Phase 1: Hero
+  { t: 0.00, pos: [0, 5, 5],     look: [0, 3, -10] },
+  { t: 0.10, pos: [0, 4, 4],     look: [0, 1, -10] },
+
+  // Phase 2: Descend through clouds (y drops, z moves slightly)
+  { t: 0.25, pos: [0, -5, 2],    look: [0, -15, -10] },
+  { t: 0.40, pos: [0, -18, -2],  look: [0, -28, -20] },
+  { t: 0.50, pos: [0, -28, -8],  look: [0, -28, -25] },
+
+  // Phase 3: Level off at door height, go straight ahead into cabin
+  { t: 0.60, pos: [0, -28, -16], look: [0, -28, -27] },
+  { t: 0.72, pos: [0, -28, -22], look: [0, -28, -27] },
+  { t: 0.85, pos: [0, -28, -24], look: [0, -28, -30] },
+  { t: 1.00, pos: [0, -28, -27], look: [0, -28, -32] },
 ];
 
 function lerpKeyframes(scroll: number) {
-  // Find surrounding keyframes
   let lower = KEYFRAMES[0];
   let upper = KEYFRAMES[KEYFRAMES.length - 1];
 
@@ -43,8 +47,8 @@ function lerpKeyframes(scroll: number) {
 
   const range = upper.t - lower.t;
   const localT = range > 0 ? (scroll - lower.t) / range : 0;
-  // Smooth easing
-  const eased = localT * localT * (3 - 2 * localT); // smoothstep
+  // Smoothstep easing
+  const eased = localT * localT * (3 - 2 * localT);
 
   const pos = lower.pos.map((v, i) => v + (upper.pos[i] - v) * eased);
   const look = lower.look.map((v, i) => v + (upper.look[i] - v) * eased);
@@ -55,39 +59,27 @@ function lerpKeyframes(scroll: number) {
 const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
   const data = useScroll();
   const { camera } = useThree();
-  const mouseX = useRef(0);
-  const mouseY = useRef(0);
-  const targetPos = useRef(new THREE.Vector3());
-  const targetLook = useRef(new THREE.Vector3());
 
-  // Mouse parallax (only in hero phase)
-  if (typeof window !== 'undefined') {
-    window.addEventListener('mousemove', (e) => {
-      mouseX.current = (e.clientX / window.innerWidth - 0.5) * 2;
-      mouseY.current = (e.clientY / window.innerHeight - 0.5) * 2;
-    }, { passive: true, once: false });
-  }
+  // Smoothed target positions (prevents wobble)
+  const smoothPos = useRef(new THREE.Vector3(0, 5, 5));
+  const smoothLook = useRef(new THREE.Vector3(0, 3, -10));
 
   useFrame((_, delta) => {
     const offset = data.offset;
     const { pos, look } = lerpKeyframes(offset);
 
-    // Mouse parallax fades out as we approach the tower
-    const parallaxStrength = Math.max(0, 1 - offset * 3);
-    const px = mouseX.current * 0.3 * parallaxStrength;
-    const py = mouseY.current * 0.15 * parallaxStrength;
+    // Smoothly damp toward target (prevents snappy wobble)
+    smoothPos.current.lerp(
+      new THREE.Vector3(pos[0], pos[1], pos[2]),
+      Math.min(delta * 4, 1)
+    );
+    smoothLook.current.lerp(
+      new THREE.Vector3(look[0], look[1], look[2]),
+      Math.min(delta * 4, 1)
+    );
 
-    targetPos.current.set(pos[0] + px, pos[1] + py, pos[2]);
-    targetLook.current.set(look[0], look[1], look[2]);
-
-    // Smooth damping
-    camera.position.lerp(targetPos.current, delta * 3);
-    
-    const currentLook = new THREE.Vector3();
-    camera.getWorldDirection(currentLook);
-    currentLook.add(camera.position);
-    currentLook.lerp(targetLook.current, delta * 3);
-    camera.lookAt(targetLook.current);
+    camera.position.copy(smoothPos.current);
+    camera.lookAt(smoothLook.current);
   });
 
   return <group>{children}</group>;

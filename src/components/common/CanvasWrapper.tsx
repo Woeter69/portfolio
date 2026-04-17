@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { AdaptiveDpr, Preload, ScrollControls, useProgress } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import gsap from 'gsap';

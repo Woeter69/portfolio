@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useScroll } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -70,7 +70,6 @@ const WatchtowerModel = () => {
   const towerHeight = 16;
   const cabinY = towerHeight;
   const cabinSize = 4;
-  const half = cabinSize / 2;
 
   // Bottom spread (legs splay outward at bottom)
   const botSpread = 3.5;
@@ -160,9 +159,8 @@ const WatchtowerModel = () => {
 
       {/* ===== STAIRCASE + PLATFORM WITH HATCH ===== */}
       {(() => {
-        const elements: JSX.Element[] = [];
+        const elements: React.JSX.Element[] = [];
         const stairW = 0.9;
-        const stepsPerFlight = 6;
         const pad = 0.5;
         const platformSize = cabinSize + 2;
         const ph = platformSize / 2; // 3.0

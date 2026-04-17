@@ -22,15 +22,15 @@ const KEYFRAMES = [
   { t: 0.10, pos: [0, 4, 4],     look: [0, 1, -10] },
 
   // Phase 2: Descend through clouds (y drops, z moves slightly)
-  { t: 0.25, pos: [0, -5, 2],    look: [0, -15, -10] },
-  { t: 0.40, pos: [0, -18, -2],  look: [0, -28, -20] },
-  { t: 0.50, pos: [0, -28, -8],  look: [0, -28, -25] },
+  { t: 0.25, pos: [0, -10, 2],   look: [0, -25, -10] },
+  { t: 0.40, pos: [0, -30, -2],  look: [0, -43, -20] },
+  { t: 0.50, pos: [0, -43, -8],  look: [0, -43, -25] },
 
   // Phase 3: Level off at door height, go straight ahead into cabin
-  { t: 0.60, pos: [0, -28, -16], look: [0, -28, -27] },
-  { t: 0.72, pos: [0, -28, -22], look: [0, -28, -27] },
-  { t: 0.85, pos: [0, -28, -24], look: [0, -28, -30] },
-  { t: 1.00, pos: [0, -28, -27], look: [0, -28, -32] },
+  { t: 0.60, pos: [0, -43, -16], look: [0, -43, -27] },
+  { t: 0.72, pos: [0, -43, -22], look: [0, -43, -27] },
+  { t: 0.85, pos: [0, -43, -24], look: [0, -43, -30] },
+  { t: 1.00, pos: [0, -43, -27], look: [0, -43, -32] },
 ];
 
 function lerpKeyframes(scroll: number) {

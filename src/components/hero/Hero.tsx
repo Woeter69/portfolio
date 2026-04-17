@@ -77,7 +77,7 @@ const Hero = () => {
         letterSpacing={0.15}
         fillOpacity={0}
       >
-        DEVELOPER • RESEARCHER • CREATIVE
+        DEVELOPER
       </Text>
 
       {/* Stars (night mode only) */}

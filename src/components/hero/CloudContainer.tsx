@@ -44,6 +44,22 @@ const CloudContainer = () => {
         color="#FFDAB9"
       />
 
+      {/* Extra cloud - upper left for depth */}
+      <Cloud
+        seed={10}
+        segments={1}
+        concentrate="inside"
+        bounds={[8, 6, 8]}
+        growth={3}
+        position={[-7, 2, -6]}
+        smallestVolume={2}
+        scale={1.8}
+        volume={2}
+        speed={0.1}
+        fade={4}
+        color="#FFE8D0"
+      />
+
       {/* Large atmospheric cloud - lower left */}
       <Cloud
         seed={4}
@@ -105,6 +121,38 @@ const CloudContainer = () => {
         fade={0.1}
         speed={0.06}
         color="#FFE0C0"
+      />
+
+      {/* Right side cloud */}
+      <Cloud
+        seed={13}
+        segments={1}
+        concentrate="inside"
+        bounds={[6, 5, 6]}
+        growth={3}
+        position={[10, 1, -4]}
+        smallestVolume={2}
+        scale={1.6}
+        volume={2}
+        speed={0.09}
+        fade={4}
+        color="#FFD5B5"
+      />
+
+      {/* Behind right cloud - deeper */}
+      <Cloud
+        seed={14}
+        segments={1}
+        concentrate="outside"
+        bounds={[7, 5, 7]}
+        growth={2}
+        position={[12, 0, -10]}
+        smallestVolume={2}
+        scale={1.4}
+        volume={2}
+        speed={0.07}
+        fade={4}
+        color="#FFDCC0"
       />
     </Clouds>
   );

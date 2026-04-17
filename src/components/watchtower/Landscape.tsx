@@ -128,12 +128,44 @@ const Mountain = ({ position, width, height, depth, color }: {
   );
 };
 
-// ─── LAKE ───
-const Lake = ({ position, size }: {
+// ─── LAKE (organic shape with noise-displaced edges) ───
+const makeOrganicCircle = (radius: number, segments: number, seed: number) => {
+  const g = new THREE.CircleGeometry(radius, segments);
+  const pos = g.attributes.position;
+  for (let i = 1; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i);
+    const angle = Math.atan2(y, x);
+    const dist = Math.sqrt(x * x + y * y);
+    const noise = 1 + Math.sin(angle * 3 + seed) * 0.12
+      + Math.cos(angle * 5 + seed * 2) * 0.08
+      + Math.sin(angle * 7 + seed * 0.5) * 0.05;
+    pos.setXY(i, x / dist * dist * noise, y / dist * dist * noise);
+  }
+  g.computeVertexNormals();
+  return g;
+};
+
+const Lake = ({ position, size, seed = 42 }: {
   position: [number, number, number];
   size: [number, number];
+  seed?: number;
 }) => {
   const waterRef = useRef<THREE.Mesh>(null);
+  const waterGeo = useMemo(() => makeOrganicCircle(1, 32, seed), [seed]);
+  const bedGeo = useMemo(() => makeOrganicCircle(1, 32, seed + 5), [seed]);
+  const shoreGeo = useMemo(() => {
+    const g = new THREE.RingGeometry(0.78, 1, 32);
+    const pos = g.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i);
+      const angle = Math.atan2(y, x);
+      const dist = Math.sqrt(x * x + y * y);
+      const noise = 1 + Math.sin(angle * 3 + seed) * 0.1 + Math.cos(angle * 5 + seed) * 0.06;
+      pos.setXY(i, x / dist * dist * noise, y / dist * dist * noise);
+    }
+    return g;
+  }, [seed]);
+
   useFrame(({ clock }) => {
     if (waterRef.current) {
       waterRef.current.position.y = position[1] + Math.sin(clock.elapsedTime * 0.4) * 0.04;
@@ -142,16 +174,13 @@ const Lake = ({ position, size }: {
 
   return (
     <group>
-      <mesh ref={waterRef} position={position} rotation={[-Math.PI / 2, 0, 0]} scale={[size[0], size[1], 1]}>
-        <circleGeometry args={[1, 24]} />
+      <mesh ref={waterRef} position={position} rotation={[-Math.PI / 2, 0, 0]} scale={[size[0], size[1], 1]} geometry={waterGeo}>
         <meshStandardMaterial color={C.water} transparent opacity={0.65} roughness={0.05} metalness={0.4} />
       </mesh>
-      <mesh position={[position[0], position[1] - 0.2, position[2]]} rotation={[-Math.PI / 2, 0, 0]} scale={[size[0] + 0.5, size[1] + 0.5, 1]}>
-        <circleGeometry args={[1, 24]} />
+      <mesh position={[position[0], position[1] - 0.2, position[2]]} rotation={[-Math.PI / 2, 0, 0]} scale={[size[0] + 0.5, size[1] + 0.5, 1]} geometry={bedGeo}>
         <meshStandardMaterial color={C.waterDeep} roughness={0.9} />
       </mesh>
-      <mesh position={[position[0], position[1] - 0.05, position[2]]} rotation={[-Math.PI / 2, 0, 0]} scale={[size[0] + 1.5, size[1] + 1.5, 1]}>
-        <ringGeometry args={[0.8, 1, 24]} />
+      <mesh position={[position[0], position[1] - 0.05, position[2]]} rotation={[-Math.PI / 2, 0, 0]} scale={[size[0] + 1.5, size[1] + 1.5, 1]} geometry={shoreGeo}>
         <meshStandardMaterial color={C.groundDark} roughness={0.95} />
       </mesh>
     </group>
@@ -215,6 +244,71 @@ const Terrain = () => {
   );
 };
 
+// ─── MOUNTAIN CLOUD WISPS (multi-blob, animated drift) ───
+const cloudData = [
+  { pos: [-25, 10, 62], s: 4, speed: 0.12 },
+  { pos: [20, 12, 68], s: 3.5, speed: 0.08 },
+  { pos: [-10, 8, 48], s: 3, speed: 0.15 },
+  { pos: [40, 11, 56], s: 3.5, speed: 0.1 },
+  { pos: [-42, 9, 50], s: 3, speed: 0.13 },
+  { pos: [10, 7, 44], s: 2.5, speed: 0.11 },
+];
+
+const CloudWisp = ({ position, scale, speed }: {
+  position: [number, number, number];
+  scale: number;
+  speed: number;
+}) => {
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame(({ clock }) => {
+    if (groupRef.current) {
+      groupRef.current.position.x = position[0] + Math.sin(clock.elapsedTime * speed) * 3;
+      groupRef.current.position.y = position[1] + Math.sin(clock.elapsedTime * speed * 0.7 + 1) * 0.5;
+    }
+  });
+
+  const mat = <meshStandardMaterial color="#EDE0D4" transparent opacity={0.3} roughness={1} depthWrite={false} />;
+
+  return (
+    <group ref={groupRef} position={position}>
+      {/* Center blob */}
+      <mesh scale={[scale * 1.8, scale * 0.6, scale]}>
+        <sphereGeometry args={[1, 8, 6]} />
+        {mat}
+      </mesh>
+      {/* Left puff */}
+      <mesh position={[-scale * 1.2, -scale * 0.1, scale * 0.3]} scale={[scale * 1.2, scale * 0.5, scale * 0.8]}>
+        <sphereGeometry args={[1, 7, 5]} />
+        {mat}
+      </mesh>
+      {/* Right puff */}
+      <mesh position={[scale * 1.4, scale * 0.1, -scale * 0.2]} scale={[scale * 1.3, scale * 0.45, scale * 0.9]}>
+        <sphereGeometry args={[1, 7, 5]} />
+        {mat}
+      </mesh>
+      {/* Top wisp */}
+      <mesh position={[scale * 0.3, scale * 0.35, 0]} scale={[scale * 0.9, scale * 0.35, scale * 0.7]}>
+        <sphereGeometry args={[1, 6, 5]} />
+        {mat}
+      </mesh>
+    </group>
+  );
+};
+
+const MountainClouds = () => (
+  <group>
+    {cloudData.map((c, i) => (
+      <CloudWisp
+        key={`mcw-${i}`}
+        position={c.pos as [number, number, number]}
+        scale={c.s}
+        speed={c.speed}
+      />
+    ))}
+  </group>
+);
+
 // ─── MAIN LANDSCAPE ───
 const Landscape = () => {
   const seed = (n: number) => ((Math.sin(n * 127.1 + 311.7) * 43758.5453) % 1 + 1) % 1;
@@ -234,6 +328,12 @@ const Landscape = () => {
       { cx: 28, cz: 30, count: 15, r: 12, color: C.treeDark },
     ];
 
+    // Lake positions for exclusion zones
+    const lakes = [
+      { x: 20, z: 25, r: 8 },
+      { x: -15, z: 20, r: 5 },
+    ];
+
     clusters.forEach((c, ci) => {
       for (let i = 0; i < c.count; i++) {
         const ang = seed(ci * 100 + i) * Math.PI * 2;
@@ -241,6 +341,10 @@ const Landscape = () => {
         const x = c.cx + Math.cos(ang) * dist;
         const z = c.cz + Math.sin(ang) * dist;
         if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
+        // Skip trees in lake zones
+        if (lakes.some(l => Math.sqrt((x - l.x) ** 2 + (z - l.z) ** 2) < l.r)) continue;
+        // Skip trees that would clip into mountain zones
+        if (z > 35 || Math.abs(x) > 45) continue;
         const s = 0.5 + seed(ci * 100 + i + 25) * 0.9;
         result.push({ pos: [x, 0, z], scale: s, color: c.color, v: seed(ci * 100 + i + 75) });
       }
@@ -268,53 +372,55 @@ const Landscape = () => {
       {/* Displaced terrain */}
       <Terrain />
 
-      {/* ===== MOUNTAIN RANGES (layered with noise displacement) ===== */}
+      {/* ===== MOUNTAIN RANGES (reduced heights to stay below cloud floor) ===== */}
       {/* Far range — warmest / haziest */}
       {[
-        { x: -50, h: 30, w: 22, d: 15 },
-        { x: -20, h: 38, w: 18, d: 12 },
-        { x: 10, h: 28, w: 20, d: 14 },
-        { x: 40, h: 35, w: 22, d: 16 },
-        { x: 65, h: 25, w: 18, d: 12 },
+        { x: -50, h: 18, w: 22, d: 15 },
+        { x: -20, h: 22, w: 18, d: 12 },
+        { x: 10, h: 16, w: 20, d: 14 },
+        { x: 40, h: 20, w: 22, d: 16 },
+        { x: 65, h: 15, w: 18, d: 12 },
       ].map((m, i) => (
         <Mountain key={`mf-${i}`} position={[m.x, m.h / 2, 75]} width={m.w} height={m.h} depth={m.d} color={C.mtFar} />
       ))}
 
       {/* Mid range */}
       {[
-        { x: -40, h: 24, w: 16, d: 10 },
-        { x: -10, h: 30, w: 14, d: 9 },
-        { x: 20, h: 22, w: 18, d: 11 },
-        { x: 50, h: 28, w: 15, d: 10 },
+        { x: -40, h: 14, w: 16, d: 10 },
+        { x: -10, h: 18, w: 14, d: 9 },
+        { x: 20, h: 13, w: 18, d: 11 },
+        { x: 50, h: 16, w: 15, d: 10 },
       ].map((m, i) => (
         <Mountain key={`mm-${i}`} position={[m.x, m.h / 2, 55]} width={m.w} height={m.h} depth={m.d} color={C.mtMid} />
       ))}
 
       {/* Near range */}
       {[
-        { x: -35, h: 18, w: 12, d: 8 },
-        { x: -5, h: 22, w: 10, d: 7 },
-        { x: 25, h: 16, w: 14, d: 9 },
-        { x: 50, h: 20, w: 12, d: 8 },
+        { x: -35, h: 10, w: 12, d: 8 },
+        { x: -5, h: 14, w: 10, d: 7 },
+        { x: 25, h: 10, w: 14, d: 9 },
+        { x: 50, h: 12, w: 12, d: 8 },
       ].map((m, i) => (
         <Mountain key={`mn-${i}`} position={[m.x, m.h / 2, 40]} width={m.w} height={m.h} depth={m.d} color={C.mtNear} />
       ))}
 
       {/* Side mountains — surround on ALL sides to hide edges */}
-      <Mountain position={[-55, 12, 10]} width={18} height={24} depth={12} color={C.mtFar} />
-      <Mountain position={[55, 10, 5]} width={16} height={20} depth={10} color={C.mtFar} />
-      <Mountain position={[-60, 10, -15]} width={20} height={20} depth={14} color={C.mtMid} />
-      <Mountain position={[60, 8, -10]} width={18} height={16} depth={12} color={C.mtMid} />
+      <Mountain position={[-55, 8, 10]} width={18} height={16} depth={12} color={C.mtFar} />
+      <Mountain position={[55, 7, 5]} width={16} height={14} depth={10} color={C.mtFar} />
+      <Mountain position={[-60, 7, -15]} width={20} height={14} depth={14} color={C.mtMid} />
+      <Mountain position={[60, 6, -10]} width={18} height={12} depth={12} color={C.mtMid} />
       {/* Behind camera — close the ring */}
-      <Mountain position={[-30, 12, -40]} width={22} height={24} depth={16} color={C.mtFar} />
-      <Mountain position={[0, 15, -50]} width={25} height={30} depth={18} color={C.mtFar} />
-      <Mountain position={[30, 10, -40]} width={20} height={20} depth={14} color={C.mtFar} />
-      <Mountain position={[-55, 8, -30]} width={18} height={16} depth={12} color={C.mtMid} />
-      <Mountain position={[55, 9, -25]} width={16} height={18} depth={10} color={C.mtMid} />
+      <Mountain position={[-30, 8, -40]} width={22} height={16} depth={16} color={C.mtFar} />
+      <Mountain position={[0, 10, -50]} width={25} height={20} depth={18} color={C.mtFar} />
+      <Mountain position={[30, 7, -40]} width={20} height={14} depth={14} color={C.mtFar} />
+      <Mountain position={[-55, 6, -30]} width={18} height={12} depth={12} color={C.mtMid} />
+      <Mountain position={[55, 6, -25]} width={16} height={12} depth={10} color={C.mtMid} />
 
       {/* ===== WATER ===== */}
-      <Lake position={[18, 0.05, 15]} size={[7, 4.5]} />
-      <Lake position={[-18, 0.05, 12]} size={[3, 2.5]} />
+      {/* Main lake — nestled near mountains */}
+      <Lake position={[20, 0.15, 25]} size={[7, 5]} seed={42} />
+      {/* Small pond — left side near hills */}
+      <Lake position={[-15, 0.15, 20]} size={[3.5, 2.5]} seed={77} />
 
       {/* ===== DISTANT TOWER ===== */}
       <DistantTower position={[32, 0, 42]} />
@@ -328,6 +434,9 @@ const Landscape = () => {
       {rocks.map((r, i) => (
         <Rock key={`r-${i}`} position={r.pos} scale={r.s} color={r.c} />
       ))}
+
+      {/* ===== MOUNTAIN CLOUD WISPS (animated multi-blob) ===== */}
+      <MountainClouds />
     </group>
   );
 };

@@ -7,7 +7,7 @@ import Landscape from './Landscape';
  */
 const WatchtowerScene = () => {
   return (
-    <group position={[0, -45, -25]} rotation={[0, Math.PI, 0]}>
+    <group position={[0, -60, -25]} rotation={[0, Math.PI, 0]}>
       {/* Warm directional light (golden hour angle) */}
       <directionalLight
         position={[-8, 15, -5]}
@@ -25,9 +25,6 @@ const WatchtowerScene = () => {
       />
       {/* Ambient fill */}
       <ambientLight intensity={0.3} color="#ffeedd" />
-
-      {/* Atmospheric fog — hides landscape from hero distance, reveals on scroll */}
-      <fog attach="fog" args={['#d4a574', 30, 120]} />
 
       {/* The tower */}
       <WatchtowerModel />

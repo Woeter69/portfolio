@@ -48,7 +48,7 @@ const CanvasWrapper = ({ children }: CanvasWrapperProps) => {
           ref={canvasRef}
           dpr={[1, 2]}
         >
-          <ScrollControls pages={4} damping={0.4} maxSpeed={1} distance={1} style={{ zIndex: 1 }}>
+          <ScrollControls pages={6} damping={0.3} maxSpeed={0.8} distance={1} style={{ zIndex: 1 }}>
             {children}
           </ScrollControls>
           <Preload all />

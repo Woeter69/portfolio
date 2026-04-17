@@ -61,8 +61,6 @@ const Hero = () => {
         anchorX="center"
         anchorY="middle"
         fillOpacity={0}
-        outlineWidth={0.02}
-        outlineColor="#00000030"
       >
         Hi, I am Woeter.
       </Text>
@@ -72,14 +70,12 @@ const Hero = () => {
         ref={subtitleRef}
         position={[0, -12, -10]}
         fontSize={0.4}
-        color="rgba(255, 255, 255, 0.85)"
+        color="#ffffff"
         font="./space-grotesk.ttf"
         anchorX="center"
         anchorY="middle"
         letterSpacing={0.15}
         fillOpacity={0}
-        outlineWidth={0.01}
-        outlineColor="#00000020"
       >
         DEVELOPER • RESEARCHER • CREATIVE
       </Text>

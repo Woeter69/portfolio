@@ -64,17 +64,25 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
   const smoothPos = useRef(new THREE.Vector3(0, 5, 5));
   const smoothLook = useRef(new THREE.Vector3(0, 3, -10));
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const offset = data.offset;
     const { pos, look } = lerpKeyframes(offset);
 
+    // Mouse parallax (desktop only) — subtle camera offset following pointer
+    const isMobile = window.innerWidth <= 768;
+    let mx = 0, my = 0;
+    if (!isMobile) {
+      mx = state.pointer.x * 1.2;  // horizontal drift
+      my = state.pointer.y * 0.6;  // vertical drift
+    }
+
     // Smoothly damp toward target (prevents snappy wobble)
     smoothPos.current.lerp(
-      new THREE.Vector3(pos[0], pos[1], pos[2]),
+      new THREE.Vector3(pos[0] + mx, pos[1] + my * 0.3, pos[2]),
       Math.min(delta * 4, 1)
     );
     smoothLook.current.lerp(
-      new THREE.Vector3(look[0], look[1], look[2]),
+      new THREE.Vector3(look[0] + mx * 0.5, look[1] + my * 0.2, look[2]),
       Math.min(delta * 4, 1)
     );
 

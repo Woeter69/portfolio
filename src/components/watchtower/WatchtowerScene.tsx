@@ -1,4 +1,5 @@
 import WatchtowerModel from './WatchtowerModel';
+import Landscape from './Landscape';
 
 /**
  * Scene wrapper for the watchtower — positions it below the clouds
@@ -25,10 +26,17 @@ const WatchtowerScene = () => {
       {/* Ambient fill */}
       <ambientLight intensity={0.3} color="#ffeedd" />
 
+      {/* Atmospheric fog — hides landscape from hero distance, reveals on scroll */}
+      <fog attach="fog" args={['#d4a574', 30, 120]} />
+
       {/* The tower */}
       <WatchtowerModel />
+
+      {/* Firewatch landscape */}
+      <Landscape />
     </group>
   );
 };
 
 export default WatchtowerScene;
+

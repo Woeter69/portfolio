@@ -6,7 +6,11 @@ import { useScrollStore } from '../../stores';
  */
 const ScrollHint = () => {
   const scrollProgress = useScrollStore((state) => state.scrollProgress);
+  const showExplorePrompt = useScrollStore((state) => state.showExplorePrompt);
+  const isExploreMode = useScrollStore((state) => state.isExploreMode);
   const [visible, setVisible] = useState(false);
+
+  const [text, setText] = useState("SCROLL");
 
   useEffect(() => {
     // Show after a delay (once loading is done)
@@ -14,13 +18,18 @@ const ScrollHint = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Hide once user has scrolled
+  // Hide if actively exploring (PointerLock is active)
+  if (isExploreMode) return null;
+
+  // We show the hint natively at the top (progress < 0.02)
   const shouldShow = visible && scrollProgress < 0.02;
 
   return (
     <div className={`scroll-hint ${shouldShow ? 'visible' : ''}`}>
       <div className="scroll-hint-inner">
-        <span className="scroll-hint-text">Scroll</span>
+        <span className="scroll-hint-text">
+          SCROLL
+        </span>
         <div className="scroll-hint-line" />
       </div>
     </div>

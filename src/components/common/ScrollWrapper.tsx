@@ -1,9 +1,46 @@
 import { useRef, useEffect, useState } from 'react';
-import { useScroll, Html } from '@react-three/drei';
+import { useScroll, Text } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import gsap from 'gsap';
 import PlayerController from './PlayerController';
 import { useScrollStore } from '../../stores';
+
+const ExplorePrompt3D = () => {
+  const textRef = useRef<any>(null);
+
+  useEffect(() => {
+    // Elegant fade and slide up animation matching the Hero text
+    gsap.fromTo(
+      textRef.current.position,
+      { y: -42.4 },
+      { y: -42.3, duration: 1.5, ease: 'power3.out' }
+    );
+    gsap.fromTo(
+      textRef.current,
+      { fillOpacity: 0 },
+      { fillOpacity: 0.9, duration: 1.5 }
+    );
+  }, []);
+
+  return (
+    <Text
+      ref={textRef}
+      position={[0, -42.3, -26.0]} // Shifted up organically +0.3 units above eye-line
+      fontSize={0.15}
+      color="#EAE2D6"
+      font="./outfit.ttf"
+      anchorX="center"
+      anchorY="middle"
+      letterSpacing={0.1}
+      fillOpacity={0}
+      textAlign="center"
+      lineHeight={1.4}
+    >
+      Click anywhere{'\n'}to explore
+    </Text>
+  );
+};
 
 interface ScrollWrapperProps {
   children: React.ReactNode;
@@ -64,9 +101,14 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
   const data = useScroll();
   const { camera, gl } = useThree();
   const isExploreMode = useScrollStore((state) => state.isExploreMode);
+  const setShowExplorePrompt = useScrollStore((state) => state.setShowExplorePrompt);
+  const showExplorePrompt = useScrollStore((state) => state.showExplorePrompt);
+  
+  const scrollProgress = useScrollStore((state) => state.scrollProgress);
+  const setScrollProgress = useScrollStore((state) => state.setScrollProgress);
+
   // Force react re-renders out of the Drei scroll proxy safely
   const [showController, setShowController] = useState(false);
-  const [showButton, setShowButton] = useState(false);
 
   // Smoothed target positions (prevents wobble for scroll path)
   const smoothPos = useRef(new THREE.Vector3(0, 5, 5));
@@ -82,8 +124,13 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
     if (offset >= 0.90 && !showController) setShowController(true);
     else if (offset < 0.90 && showController) setShowController(false);
 
-    if (offset >= 0.999 && !showButton) setShowButton(true);
-    else if (offset < 0.999 && showButton) setShowButton(false);
+    // Blast the prompt state out natively to the global 2D UI to trigger the ScrollHint
+    if (offset >= 0.999) setShowExplorePrompt(true);
+    else setShowExplorePrompt(false);
+
+    // Turn off the global 'SCROLL' hint dynamically explicitly throttling React State
+    if (offset >= 0.02 && scrollProgress < 0.02) setScrollProgress(1);
+    else if (offset < 0.02 && scrollProgress >= 0.02) setScrollProgress(0);
     
     // Mouse parallax (desktop only) — subtle camera offset following pointer
       const isMobile = window.innerWidth <= 768;
@@ -115,12 +162,17 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
 
 
 
+      {/* Native 3D Explore Prompt (Matches Hero Banner) */}
+      {!isExploreMode && showExplorePrompt && (
+        <ExplorePrompt3D />
+      )}
+
       {/* First Person Controls permanently available inside the cabin */}
       {showController && (
         <PlayerController 
           startPos={[0, -42.6, -24.0]} 
           lookAtPos={[0, -42.6, -27.0]} 
-          showButton={showButton}
+          showButton={false} // Cleanly disable 3D projection rendering since it moved to global ScrollHint!
         />
       )}
     </>

@@ -23,20 +23,34 @@ export default function PlayerController({ onUnlock, startPos, lookAtPos, showBu
   const direction = useRef(new THREE.Vector3());
 
   useEffect(() => {
+    const onGlobalClick = () => {
+      // If the cinematic is finished and the text is showing, a click anywhere instantly locks it!
+      if (!isExploreMode) controlsRef.current?.lock();
+    };
+
     // Reveal button smoothly when showButton triggers
     if (showButton) {
       requestAnimationFrame(() => setOpacity(1));
+      document.addEventListener('click', onGlobalClick);
     } else {
       setOpacity(0);
+      document.removeEventListener('click', onGlobalClick);
     }
-  }, [showButton]);
+
+    return () => {
+      document.removeEventListener('click', onGlobalClick);
+    };
+  }, [showButton, isExploreMode]);
 
   useEffect(() => {
-    // Prevent default browser scroll while moving inside room
-    // Note: We don't force camera position here anymore, we let the ScrollWrapper seamlessly hand it over
-    // and ONLY apply Player movement delta going forward.
-    document.body.style.overflow = 'hidden';
+    if (isExploreMode) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }, [isExploreMode]);
 
+  useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       console.log('PLAYER CONTROLLER: Key pressed:', e.code);
       if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.current.w = true;
@@ -167,38 +181,23 @@ export default function PlayerController({ onUnlock, startPos, lookAtPos, showBu
       {!isExploreMode && showButton && (
         <Html center position={[-1.0, -42.4, -24.5]}>
           <div 
-            onClick={(e) => {
-              e.stopPropagation();
-              controlsRef.current?.lock();
-            }}
             style={{
-              position: 'absolute',
-              top: '-50vh',
-              left: '-50vw',
-              width: '100vw',
-              height: '100vh',
+              pointerEvents: 'none', // DO NOT BLOCK CANVAS MOUSE EVENTS (Keeps cinematic parallax alive!)
               display: 'flex',
+              flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              cursor: 'pointer',
               opacity: opacity,
               transform: `translateY(${opacity === 1 ? '0px' : '10px'})`,
               transition: 'all 1s ease-out'
             }}
           >
-            <span 
-              style={{
-                fontSize: '18px',
-                fontWeight: 500,
-                color: '#EAE2D6',
-                fontFamily: "'Space Grotesk', sans-serif",
-                letterSpacing: '1px',
-                textShadow: '0 2px 12px rgba(0,0,0,0.8)',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Click anywhere to explore
-            </span>
+            <div className="scroll-hint-inner">
+              <span className="scroll-hint-text" style={{ color: 'white', textShadow: '0 2px 8px rgba(0,0,0,1)', letterSpacing: '4px' }}>
+                CLICK ANYWHERE
+              </span>
+              <div className="scroll-hint-line" style={{ background: 'linear-gradient(to bottom, white, transparent)' }} />
+            </div>
           </div>
         </Html>
       )}

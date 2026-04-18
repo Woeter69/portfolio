@@ -70,12 +70,12 @@ const WatchtowerModel = () => {
 
   const towerHeight = 16;
   const cabinY = towerHeight;
-  const cabinSize = 4;
+  const cabinSize = 5.0;
 
   // Bottom spread (legs splay outward at bottom)
-  const botSpread = 3.5;
+  const botSpread = 3.8;
   // Top spread (legs come together at platform)
-  const topSpread = 2.2;
+  const topSpread = 2.5;
 
   // Leg corners: [x, z] at bottom and top
   const legCorners = [
@@ -88,8 +88,9 @@ const WatchtowerModel = () => {
   // Animate door based on scroll
   useFrame(() => {
     if (!doorRef.current) return;
-    const doorProgress = data.range(0.55, 0.15);
-    doorRef.current.rotation.y = -doorProgress * Math.PI * 0.5;
+    const openProgress = data.range(0.55, 0.15); // opens 0.55 to 0.70
+    const closeProgress = data.range(0.75, 0.10); // closes 0.75 to 0.85
+    doorRef.current.rotation.y = -(openProgress - closeProgress) * Math.PI * 0.5;
   });
 
   return (
@@ -167,12 +168,11 @@ const WatchtowerModel = () => {
         const ph = platformSize / 2; // 3.0
 
         // Hatch on the LEFT side of the platform (walkway between cabin and railing)
-        const hatchW = 1.3;
+        // Platform ends at x = -ph = -3.5. Cabin wall is at x = -cabinSize/2 = -2.5
+        // Walkway is x: -3.5 to -2.5. Center it at -3.0
+        const hatchW = 0.9;
         const hatchD = 1.3;
-        // Left edge of platform is at x = -ph = -3
-        // Cabin wall is at x = -cabinSize/2 = -2
-        // So walkway is x: -3 to -2, center at -2.5
-        const hatchX = -(ph - hatchW / 2 - 0.15); // x ≈ -2.2
+        const hatchX = -3.00; // x = -3.0
         const hatchZ = 0; // centered on z
 
         // ─── 8 FLIGHTS, each along one face, NO shortcuts ───
@@ -568,7 +568,7 @@ const Cabin = ({ y, size, doorRef }: {
     );
   };
 
-  // Door dimensions
+  // Dimensions
   const doorWidth = 1;
   const doorHeight = 2.2;
   const doorAreaWidth = doorWidth + 0.2; // door + small frame
@@ -614,9 +614,9 @@ const Cabin = ({ y, size, doorRef }: {
         <boxGeometry args={[frameThickness, wallHeight, wallThickness]} />
         <meshStandardMaterial color={WOOD_DARK} roughness={0.8} />
       </mesh>
-      {/* Header above door */}
-      <mesh position={[0, y + doorHeight + 0.15, -half]}>
-        <boxGeometry args={[doorAreaWidth, wallHeight - doorHeight - 0.1, wallThickness]} />
+      {/* Header above door - solid wood spanning up to the ceiling to close the hole */}
+      <mesh position={[0, y + 2.6, -half]}>
+        <boxGeometry args={[doorAreaWidth, 0.8, wallThickness]} />
         <meshStandardMaterial color={WOOD_LIGHT} roughness={0.85} />
       </mesh>
 

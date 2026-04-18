@@ -273,6 +273,8 @@ const DeskArea = ({ y }: { y: number }) => (
         <coneGeometry args={[0.08, 0.1, 8, 1, true]} />
         <meshStandardMaterial color={I.redBright} roughness={0.7} side={THREE.DoubleSide} />
       </mesh>
+      {/* Light Bulb / Glow */}
+      <pointLight position={[0.1, 0.26, 0]} distance={1.5} intensity={0.8} color="#FFD1A3" decay={2} />
     </group>
 
     {/* Chair */}

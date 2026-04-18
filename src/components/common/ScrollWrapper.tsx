@@ -13,8 +13,8 @@ const ExplorePrompt3D = () => {
     // Elegant fade and slide up animation matching the Hero text
     gsap.fromTo(
       textRef.current.position,
-      { y: -42.4 },
-      { y: -42.3, duration: 1.5, ease: 'power3.out' }
+      { y: -41.9 },
+      { y: -41.8, duration: 1.5, ease: 'power3.out' }
     );
     gsap.fromTo(
       textRef.current,
@@ -26,7 +26,7 @@ const ExplorePrompt3D = () => {
   return (
     <Text
       ref={textRef}
-      position={[0, -42.3, -26.0]} // Shifted up organically +0.3 units above eye-line
+      position={[0, -41.8, -26.0]} // Shifted up organically +0.3 units above eye-line (-42.1)
       fontSize={0.15}
       color="#EAE2D6"
       font="./outfit.ttf"
@@ -69,9 +69,9 @@ const KEYFRAMES = [
   // Door is at Z=-23. Back wall is at Z=-27. Eye level is ~ -42.6.
   { t: 0.60, pos: [0, -43, -16],       look: [0, -43, -27] }, // Approaching
   { t: 0.72, pos: [0, -43, -22],       look: [0, -43, -27] }, // At the door
-  { t: 0.85, pos: [0, -42.6, -23.5],   look: [0, -42.6, -27.0] }, // Drifting in
+  { t: 0.85, pos: [0, -42.1, -23.5],   look: [0, -42.1, -27.0] }, // Drifting in and rising to player eye-level (-42.1)
   // Settle loosely in the center, looking clearly toward the desk/bed
-  { t: 1.00, pos: [0, -42.6, -24.0],   look: [0, -42.6, -27.0] }, 
+  { t: 1.00, pos: [0, -42.1, -24.0],   look: [0, -42.1, -27.0] }, 
 ];
 
 function lerpKeyframes(scroll: number) {
@@ -107,6 +107,8 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
   const scrollProgress = useScrollStore((state) => state.scrollProgress);
   const setScrollProgress = useScrollStore((state) => state.setScrollProgress);
 
+  const hasScrolledRef = useRef(false);
+
   // Force react re-renders out of the Drei scroll proxy safely
   const [showController, setShowController] = useState(false);
 
@@ -129,8 +131,13 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
     else setShowExplorePrompt(false);
 
     // Turn off the global 'SCROLL' hint dynamically explicitly throttling React State
-    if (offset >= 0.02 && scrollProgress < 0.02) setScrollProgress(1);
-    else if (offset < 0.02 && scrollProgress >= 0.02) setScrollProgress(0);
+    if (offset >= 0.02 && !hasScrolledRef.current) {
+      hasScrolledRef.current = true;
+      setScrollProgress(1); // Set any value >= 0.02 to violently hide it globally
+    } else if (offset < 0.02 && hasScrolledRef.current) {
+      hasScrolledRef.current = false;
+      setScrollProgress(0);
+    }
     
     // Mouse parallax (desktop only) — subtle camera offset following pointer
       const isMobile = window.innerWidth <= 768;
@@ -170,8 +177,8 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
       {/* First Person Controls permanently available inside the cabin */}
       {showController && (
         <PlayerController 
-          startPos={[0, -42.6, -24.0]} 
-          lookAtPos={[0, -42.6, -27.0]} 
+          startPos={[0, -42.1, -24.0]} 
+          lookAtPos={[0, -42.1, -27.0]} 
           showButton={false} // Cleanly disable 3D projection rendering since it moved to global ScrollHint!
         />
       )}

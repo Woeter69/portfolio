@@ -6,11 +6,8 @@ import { useScrollStore } from '../../stores';
  */
 const ScrollHint = () => {
   const scrollProgress = useScrollStore((state) => state.scrollProgress);
-  const showExplorePrompt = useScrollStore((state) => state.showExplorePrompt);
   const isExploreMode = useScrollStore((state) => state.isExploreMode);
   const [visible, setVisible] = useState(false);
-
-  const [text, setText] = useState("SCROLL");
 
   useEffect(() => {
     // Show after a delay (once loading is done)

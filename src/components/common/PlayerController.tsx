@@ -6,12 +6,10 @@ import { useScrollStore } from '../../stores';
 
 interface PlayerControllerProps {
   onUnlock?: () => void;
-  startPos: [number, number, number];
-  lookAtPos: [number, number, number];
   showButton?: boolean;
 }
 
-export default function PlayerController({ onUnlock, startPos, lookAtPos, showButton = true }: PlayerControllerProps) {
+export default function PlayerController({ onUnlock, showButton = true }: PlayerControllerProps) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
   const setIsExploreMode = useScrollStore((state) => state.setExploreMode);

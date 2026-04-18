@@ -99,12 +99,11 @@ function lerpKeyframes(scroll: number) {
 
 const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
   const data = useScroll();
-  const { camera, gl } = useThree();
+  const { camera } = useThree();
   const isExploreMode = useScrollStore((state) => state.isExploreMode);
   const setShowExplorePrompt = useScrollStore((state) => state.setShowExplorePrompt);
   const showExplorePrompt = useScrollStore((state) => state.showExplorePrompt);
   
-  const scrollProgress = useScrollStore((state) => state.scrollProgress);
   const setScrollProgress = useScrollStore((state) => state.setScrollProgress);
 
   const hasScrolledRef = useRef(false);
@@ -176,11 +175,7 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
 
       {/* First Person Controls permanently available inside the cabin */}
       {showController && (
-        <PlayerController 
-          startPos={[0, -42.1, -24.0]} 
-          lookAtPos={[0, -42.1, -27.0]} 
-          showButton={false} // Cleanly disable 3D projection rendering since it moved to global ScrollHint!
-        />
+        <PlayerController showButton={false} />
       )}
     </>
   );

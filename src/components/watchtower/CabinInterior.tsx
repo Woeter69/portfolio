@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 /**
  * Firewatch-style cabin interior — all procedural geometry.

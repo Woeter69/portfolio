@@ -111,15 +111,49 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
   // Force react re-renders out of the Drei scroll proxy safely
   const [showController, setShowController] = useState(false);
 
+  // References to preserve exact exit-location mathematically if they ESC/unlock pointer!
+  const hasWalkedFlag = useRef(false);
+  const hasWalkedPos = useRef(new THREE.Vector3());
+  const hasWalkedRot = useRef(new THREE.Quaternion());
+
   // Smoothed target positions (prevents wobble for scroll path)
   const smoothPos = useRef(new THREE.Vector3(0, 5, 5));
   const smoothLook = useRef(new THREE.Vector3(0, 3, -10));
 
   useFrame((state, delta) => {
-    if (isExploreMode) return; // Yield camera control completely to PlayerController
+    // 1) Handle First-Person Active Execution
+    if (isExploreMode) {
+      if (!hasWalkedFlag.current) hasWalkedFlag.current = true;
+      hasWalkedPos.current.copy(camera.position);
+      hasWalkedRot.current.copy(camera.quaternion);
+      
+      // Keep smooth trackers perfectly synced under the hood so we don't snap wildly back if we unlock
+      smoothPos.current.copy(camera.position);
+      // Artificially update smoothLook via forward vector so parallax doesn't snap if they unlock and scroll backwards!
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+      smoothLook.current.copy(camera.position).add(forward);
+      return;
+    }
 
     const offset = data.offset;
     const { pos, look } = lerpKeyframes(offset);
+    
+    // Completely destroy the anchored position flag if they natively scroll backward out the window so re-entries are clean
+    if (offset < 0.95 && hasWalkedFlag.current) {
+        hasWalkedFlag.current = false;
+    }
+
+    // 2) The explicit user-requested FIX: If they unlock PointerLock while at offset 1.0, 
+    // freeze them exactly where they left their physics boundaries! DON'T brutally teleport them back to P5!
+    if (offset >= 0.999 && hasWalkedFlag.current) {
+        camera.position.copy(hasWalkedPos.current);
+        camera.quaternion.copy(hasWalkedRot.current);
+        
+        // Ensure UI components correctly render the visual state without touching React dependencies per frame
+        if (!showController) setShowController(true);
+        if (!showExplorePrompt) setShowExplorePrompt(true);
+        return;
+    }
     
     // Only dispatch a literal React setState threshold crossing if the boolean flips (extremely crucial for 60fps)
     if (offset >= 0.90 && !showController) setShowController(true);

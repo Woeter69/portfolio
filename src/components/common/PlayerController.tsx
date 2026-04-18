@@ -16,7 +16,7 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
   const isExploreMode = useScrollStore((state) => state.isExploreMode);
   const [opacity, setOpacity] = useState(0);
   
-  const keys = useRef({ w: false, a: false, s: false, d: false });
+  const keys = useRef({ w: false, a: false, s: false, d: false, space: false });
   const velocity = useRef(new THREE.Vector3());
   const direction = useRef(new THREE.Vector3());
 
@@ -55,12 +55,14 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.current.a = true;
       if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.current.s = true;
       if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.current.d = true;
+      if (e.code === 'Space') keys.current.space = true;
     };
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.current.w = false;
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.current.a = false;
       if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.current.s = false;
       if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.current.d = false;
+      if (e.code === 'Space') keys.current.space = false;
     };
 
     const onWheel = (e: WheelEvent) => {
@@ -110,9 +112,27 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
     controlsRef.current.moveRight(-velocity.current.x * effectiveDelta);
     controlsRef.current.moveForward(-velocity.current.z * effectiveDelta);
 
+    // ─── Newtonian Vertical Physics (Jumping + Gravity) ───
+    const FLOOR_LEVEL = -42.1;
+    
+    // Apply Gravity (Softened further to 2.2x for moon-like hang-time)
+    velocity.current.y -= 9.8 * 2.2 * effectiveDelta; 
+    
+    // Trigger jump if grounded
+    if (keys.current.space && camera.position.y <= FLOOR_LEVEL + 0.05) {
+      velocity.current.y = 5.0; // Jump force proportionately scaled down to match weaker gravity
+    }
+
+    camera.position.y += velocity.current.y * effectiveDelta;
+
+    // Hard floor collision barrier
+    if (camera.position.y < FLOOR_LEVEL) {
+      velocity.current.y = 0;
+      camera.position.y = FLOOR_LEVEL;
+    }
+
     // ─── AABB Mathematical Bounds System ───
     const cp = camera.position;
-    cp.y = -42.1; // Strict Eye Level Enforcement (Made taller per request)
 
     // Outer Room Bounds: Local [-2.5, 2.5] on both axes, transformed to World [-2.5, 2.5] / [-27.5, -22.5]
     if (cp.x < -2.3) cp.x = -2.3;
@@ -148,20 +168,20 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
       }
     };
 
-    // 1. Map Table Base: Local [0, 0] => World [0, -25], size roughly [1.2, 1.2] (pedestal is 0.8, table is 1.0)
+    // 1. Map Table Base: Local [0, 0] => World [0, -25]
     handleBox(0, -25, 1.1, 1.1); 
     
-    // 2. Desk: Local [-1.9, -1.9] => World [-1.9, -26.9], size [1.3, 0.8]
-    handleBox(-1.9, -26.9, 1.3, 0.8);
+    // 2. Desk: Local [-1.9, -1.9] => World [1.9, -23.1]
+    handleBox(1.9, -23.1, 1.3, 0.8);
     
-    // 3. Bed: Local [-2.0, 1.5] => World [-2.0, -23.5], size [1.0, 1.9]
-    handleBox(-2.0, -23.5, 1.0, 1.9);
+    // 3. Bed: Local [-2.0, 1.5] => World [2.0, -26.5]
+    handleBox(2.0, -26.5, 1.0, 1.9);
 
-    // 4. Stove: Local [2.1, 2.1] => World [2.1, -22.9], size [0.8, 0.8]
-    handleBox(2.1, -22.9, 0.8, 0.8);
+    // 4. Stove + Firewood: Local [2.1, 2.1] => World [-1.9, -27.1]
+    handleBox(-1.9, -27.1, 1.2, 0.8);
     
-    // 5. Kitchen Counter: Local [2.0, -0.6] => World [2.0, -25.6], size [1.0, 3.2]
-    handleBox(2.0, -25.6, 1.0, 3.2);
+    // 5. Kitchen Counter ("stove table"): Local [2.1, -0.2] => World [-2.1, -24.8]
+    handleBox(-2.1, -24.8, 0.65, 2.7);
   });
 
   return (

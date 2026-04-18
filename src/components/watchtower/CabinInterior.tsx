@@ -167,25 +167,27 @@ const DeskArea = ({ y }: { y: number }) => (
     </mesh>
 
     {/* Books and scattered papers on desk */}
-    <mesh position={[-0.4, 0.75, 0.2]} rotation={[0, 0.2, 0]}>
+    {/* Books and scattered papers on desk */}
+    <mesh position={[-0.4, 0.795, 0.2]} rotation={[0, 0.2, 0]}>
       <boxGeometry args={[0.25, 0.05, 0.35]} />
       <meshStandardMaterial color="#5C3A21" roughness={0.9} />
     </mesh>
-    <mesh position={[-0.45, 0.80, 0.15]} rotation={[0, -0.1, 0]}>
+    <mesh position={[-0.45, 0.84, 0.15]} rotation={[0, -0.1, 0]}>
       <boxGeometry args={[0.22, 0.04, 0.3]} />
       <meshStandardMaterial color="#2B463C" roughness={0.9} />
     </mesh>
-    <mesh position={[0.4, 0.746, 0.1]} rotation={[0, 0.5, 0]}>
+    {/* Shifted papers securely toward desk center to eliminate diagonal 'cardboard' edge-bleed over the desk rim */}
+    <mesh position={[0.25, 0.771, 0.05]} rotation={[-Math.PI / 2, 0, 0.5]}>
       <planeGeometry args={[0.25, 0.3]} />
       <meshStandardMaterial color={I.white} side={THREE.DoubleSide} />
     </mesh>
-    <mesh position={[0.35, 0.747, 0.15]} rotation={[0, -0.2, 0]}>
+    <mesh position={[0.2, 0.772, 0.1]} rotation={[-Math.PI / 2, 0, -0.2]}>
       <planeGeometry args={[0.25, 0.3]} />
       <meshStandardMaterial color="#F5F5DC" side={THREE.DoubleSide} />
     </mesh>
 
     {/* Coffee Mug */}
-    <group position={[0.45, 0.745, -0.15]}>
+    <group position={[0.45, 0.77, -0.15]}>
       <mesh position={[0, 0.06, 0]}>
         <cylinderGeometry args={[0.04, 0.04, 0.12, 12]} />
         <meshStandardMaterial color="#D84B20" roughness={0.6} />
@@ -201,7 +203,7 @@ const DeskArea = ({ y }: { y: number }) => (
     </group>
 
     {/* Typewriter - Massive Detail Upgrade */}
-    <group position={[0.05, 0.75, -0.05]}>
+    <group position={[0.05, 0.77, -0.05]}>
       {/* Main body curved styling */}
       <mesh position={[0, 0.06, 0]}>
         <boxGeometry args={[0.38, 0.12, 0.32]} />
@@ -249,15 +251,15 @@ const DeskArea = ({ y }: { y: number }) => (
         <cylinderGeometry args={[0.008, 0.008, 0.15, 6]} />
         <meshStandardMaterial color={I.metal} metalness={0.7} />
       </mesh>
-      {/* Curved Paper */}
-      <mesh position={[0, 0.28, -0.06]} rotation={[-0.2, 0, 0]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.22, 16, 1, true, Math.PI, Math.PI / 4]} />
+      {/* Crisp flat paper jutting up and backwards dynamically out of the platen roller */}
+      <mesh position={[0, 0.32, -0.14]} rotation={[-0.3, 0, 0]}>
+        <planeGeometry args={[0.22, 0.3]} />
         <meshStandardMaterial color={I.white} side={THREE.DoubleSide} />
       </mesh>
     </group>
 
-    {/* Desk Lamp */}
-    <group position={[-0.35, 0.75, 0.1]}>
+    {/* Desk Lamp - Formally snapped inward onto the table plane to prevent external wall-clipping */}
+    <group position={[-0.45, 0.77, -0.15]} rotation={[0, 0.5, 0]}>
       {/* Base */}
       <mesh position={[0, 0.03, 0]}>
         <cylinderGeometry args={[0.06, 0.07, 0.06, 8]} />
@@ -353,8 +355,8 @@ const BedArea = ({ y }: { y: number }) => (
       <meshStandardMaterial color={I.redBright} roughness={0.9} />
     </mesh>
 
-    {/* Bedside Table */}
-    <group position={[-0.45, 0, -1.05]}>
+    {/* Bedside Table - Shifted inward to prevent lantern wall-clipping */}
+    <group position={[-0.3, 0, -1.05]}>
       <mesh position={[0, 0.4, 0]}>
         <boxGeometry args={[0.4, 0.1, 0.4]} />
         <meshStandardMaterial color={I.midWood} roughness={0.9} />
@@ -415,8 +417,8 @@ const WoodStove = ({ y }: { y: number }) => (
       <meshStandardMaterial color={I.metalDark} roughness={0.9} flatShading />
     </mesh>
 
-    {/* Stack of Firewood next to the stove */}
-    <group position={[-0.45, 0.1, 0.2]}>
+    {/* Stack of Firewood next to the stove - Pulled forward and left to clear both the stove chassis and the exterior wall */}
+    <group position={[-0.55, 0.1, -0.05]}>
       {/* Logs lying in a pile */}
       {[
         [0, 0, 0], [0.15, 0, 0], [0.07, 0.12, 0],
@@ -603,38 +605,41 @@ const KitchenCounter = ({ y }: { y: number }) => (
       </mesh>
     ))}
 
-    {/* Prominent Sink Basin */}
-    <group position={[0, 0.86, 0.6]}>
+    {/* Prominent Sink Basin - Safely dialed to 1.8x width and anchored strictly to the left to preserve the cutting board */}
+    <group position={[0, 0.86, 0.45]} scale={[1, 1, 1.8]}>
       {/* Sink Rim */}
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.15, 0.2, 16]} />
+        <ringGeometry args={[0.2, 0.25, 16]} />
         <meshStandardMaterial color={I.metal} side={THREE.DoubleSide} />
       </mesh>
       {/* Sink Basin */}
       <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.15, 0.15, 0.1, 16]} />
+        <cylinderGeometry args={[0.2, 0.2, 0.1, 16]} />
         <meshStandardMaterial color={I.metalDark} />
       </mesh>
-      {/* Faucet */}
-      <mesh position={[0.1, 0.1, 0]}>
+      {/* Faucet - Inverse scaled on Z to prevent it from visually stretching with the massive basin */}
+      <mesh position={[0.16, 0.1, 0]} scale={[1, 1, 1/1.8]}>
         <cylinderGeometry args={[0.015, 0.015, 0.15, 8]} />
         <meshStandardMaterial color={I.metal} metalness={0.5} roughness={0.3} />
       </mesh>
-      <mesh position={[0.05, 0.18, 0]} rotation={[0, 0, 1.0]}>
-        <cylinderGeometry args={[0.012, 0.012, 0.12, 8]} />
+      <mesh position={[0.09, 0.18, 0]} rotation={[0, 0, 1.0]} scale={[1, 1, 1/1.8]}>
+        <cylinderGeometry args={[0.012, 0.012, 0.16, 8]} />
         <meshStandardMaterial color={I.metal} metalness={0.5} roughness={0.3} />
       </mesh>
-      {/* Stack of Ceramic Plates on Counter */}
-      <group position={[0.1, 0.04, -0.3]}>
-        {[0, 0.015, 0.03, 0.045].map((yy) => (
-          <mesh key={`plate-${yy}`} position={[0, yy, 0]}>
-            <cylinderGeometry args={[0.12, 0.08, 0.01, 16]} />
-            <meshStandardMaterial color="#FFFFFF" roughness={0.2} />
-          </mesh>
-        ))}
-      </group>
-      {/* Wooden Cutting Board with Kitchen Knife */}
-      <group position={[0, 0.02, 0.35]}>
+    </group>
+
+    {/* Stack of Ceramic Plates on Counter - Softly nudged just away from the sink per request */}
+    <group position={[0.1, 0.88, -0.05]}>
+      {[0, 0.015, 0.03, 0.045].map((yy) => (
+        <mesh key={`plate-${yy}`} position={[0, yy, 0]}>
+          <cylinderGeometry args={[0.12, 0.08, 0.01, 16]} />
+          <meshStandardMaterial color="#FFFFFF" roughness={0.2} />
+        </mesh>
+      ))}
+    </group>
+
+    {/* Wooden Cutting Board with Kitchen Knife - Reset completely unaltered to original coordinate */}
+    <group position={[0, 0.88, 0.95]}>
         <mesh>
           <boxGeometry args={[0.25, 0.02, 0.35]} />
           <meshStandardMaterial color="#C4A265" roughness={0.9} />
@@ -650,10 +655,9 @@ const KitchenCounter = ({ y }: { y: number }) => (
           <meshStandardMaterial color="#222" />
         </mesh>
       </group>
-    </group>
 
-    {/* Water Storing Can (Jerry Can) by the sink */}
-    <group position={[-0.1, 1.0, 0.9]}>
+    {/* Water Storing Can (Jerry Can) - Dropped to floor level explicitly to clear the cupboards */}
+    <group position={[0.4, 0.125, 0.9]}>
       <mesh>
         <boxGeometry args={[0.15, 0.25, 0.25]} />
         <meshStandardMaterial color="#2E5A88" roughness={0.6} flatShading />
@@ -664,8 +668,8 @@ const KitchenCounter = ({ y }: { y: number }) => (
       </mesh>
     </group>
 
-    {/* Cast Iron Frying Pan on front burner */}
-    <group position={[-0.05, 0.89, -0.45]}>
+    {/* Cast Iron Frying Pan on front burner - Physically centered over electric plate */}
+    <group position={[0, 0.89, -0.5]}>
       <mesh position={[0, 0.02, 0]}>
         <cylinderGeometry args={[0.08, 0.06, 0.03, 16]} />
         <meshStandardMaterial color="#111" roughness={0.6} />
@@ -676,8 +680,8 @@ const KitchenCounter = ({ y }: { y: number }) => (
       </mesh>
     </group>
 
-    {/* Stylish Kettle on back stovetop */}
-    <group position={[-0.05, 0.89, -0.8]}>
+    {/* Stylish Kettle on back stovetop - Physically centered perfectly over electric plate */}
+    <group position={[0, 0.89, -0.8]}>
       {/* Tapered body */}
       <mesh position={[0, 0.05, 0]}>
         <cylinderGeometry args={[0.04, 0.06, 0.1, 16]} />

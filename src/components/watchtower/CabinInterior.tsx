@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Firewatch-style cabin interior — all procedural geometry.
@@ -872,34 +872,135 @@ const FloorPlanking = ({ y, size }: { y: number; size: number }) => {
     </group>
   );
 };
+// --- PROCEDURAL HIGH-FIDELITY TEXTURE ENGINE ---
+let _woodBump: THREE.CanvasTexture | null = null;
+let _fabricBump: THREE.CanvasTexture | null = null;
+let _metalNoise: THREE.CanvasTexture | null = null;
 
-// ─── MAIN INTERIOR COMPONENT ───
+const ensureTextures = () => {
+  if (_woodBump) return;
+
+  // 1. Procedural Wood Grain Engine
+  const c1 = document.createElement('canvas');
+  c1.width = 512; c1.height = 512;
+  const ctx1 = c1.getContext('2d')!;
+  ctx1.fillStyle = '#808080'; ctx1.fillRect(0, 0, 512, 512); // Neutral base
+  for (let i = 0; i < 1500; i++) {
+    ctx1.globalAlpha = Math.random() * 0.15;
+    ctx1.fillStyle = Math.random() > 0.5 ? '#ffffff' : '#000000';
+    const x = Math.random() * 512;
+    ctx1.fillRect(x, 0, Math.random() * 3 + 1, 512); // Extruded directional grain
+    if (Math.random() > 0.98) {
+      ctx1.beginPath(); // Heavy knots
+      ctx1.ellipse(x, Math.random() * 512, Math.random() * 20 + 5, Math.random() * 40 + 10, 0, 0, Math.PI * 2);
+      ctx1.fill();
+    }
+  }
+  _woodBump = new THREE.CanvasTexture(c1);
+  _woodBump.wrapS = THREE.RepeatWrapping; _woodBump.wrapT = THREE.RepeatWrapping;
+
+  // 2. Procedural High-Frequency Fabric Weave
+  const c2 = document.createElement('canvas');
+  c2.width = 256; c2.height = 256;
+  const ctx2 = c2.getContext('2d')!;
+  ctx2.fillStyle = '#808080'; ctx2.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 30000; i++) {
+    ctx2.fillStyle = Math.random() > 0.5 ? '#ffffff' : '#000000';
+    ctx2.globalAlpha = Math.random() * 0.1;
+    ctx2.fillRect(Math.random() * 256, Math.random() * 256, 2, 2); // Tiny isolated bump points
+  }
+  _fabricBump = new THREE.CanvasTexture(c2);
+  _fabricBump.wrapS = THREE.RepeatWrapping; _fabricBump.wrapT = THREE.RepeatWrapping;
+  _fabricBump.repeat.set(8, 8); // Tiled extremely dense
+
+  // 3. Procedural Scratched Metal Smudges
+  const c3 = document.createElement('canvas');
+  c3.width = 256; c3.height = 256;
+  const ctx3 = c3.getContext('2d')!;
+  ctx3.fillStyle = '#808080'; ctx3.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 1000; i++) {
+    ctx3.globalAlpha = Math.random() * 0.15;
+    ctx3.fillStyle = Math.random() > 0.5 ? '#ffffff' : '#000000';
+    ctx3.beginPath();
+    ctx3.arc(Math.random() * 256, Math.random() * 256, Math.random() * 15 + 2, 0, Math.PI * 2);
+    ctx3.fill();
+  }
+  _metalNoise = new THREE.CanvasTexture(c3);
+  _metalNoise.wrapS = THREE.RepeatWrapping; _metalNoise.wrapT = THREE.RepeatWrapping;
+};
+
 interface CabinInteriorProps {
-  y: number;     // floor y-position (cabinY)
-  size: number;  // cabin size (4)
+  y: number;
+  size: number;
 }
 
-const CabinInterior = ({ y, size }: CabinInteriorProps) => (
-  <group>
-    {/* Warm interior lighting */}
-    <pointLight position={[0, y + 2.5, 0]} intensity={0.8} color="#FFD090" distance={6} decay={2} />
-    <pointLight position={[-1.9, y + 1.2, -1.9]} intensity={0.3} color="#FFC060" distance={3} decay={2} />
+const CabinInterior = ({ y, size }: CabinInteriorProps) => {
+  const groupRef = useRef<THREE.Group>(null);
 
-    {/* Floor planking */}
-    <FloorPlanking y={y} size={size} />
+  useEffect(() => {
+    if (!groupRef.current) return;
+    ensureTextures();
 
-    {/* Furniture pieces */}
-    <FireFinder y={y} />
-    <DeskArea y={y} />
-    <BedArea y={y} />
-    <WoodStove y={y} />
-    <KitchenCounter y={y} />
-    <MiniFridge y={y} />
-    <FireExtinguisher y={y} />
-    <Dustbin y={y} />
-    <WallClock y={y} />
-    <Posters y={y} />
-  </group>
-);
+    // Autonomously traverse the 120+ objects in the room and procedurally upgrade their shaders based on hex-mapping
+    groupRef.current.traverse((node) => {
+      if ((node as THREE.Mesh).isMesh) {
+        const mesh = node as THREE.Mesh;
+        const mat = mesh.material as THREE.MeshStandardMaterial;
+        if (!mat || !mat.color) return;
 
+        const hex = ('#' + mat.color.getHexString()).toUpperCase();
+        const match = (paletteHex: string) => hex === paletteHex.toUpperCase();
+
+        // High-Fidelity Wood Grain Overlay
+        if ([I.darkWood, I.midWood, I.lightWood, I.cream, I.plank, I.plankAlt, I.counter].some(match)) {
+           mat.bumpMap = _woodBump;
+           mat.bumpScale = 0.05; 
+           mat.needsUpdate = true;
+        }
+        // Extruded Physical Metal Shader Overhaul
+        else if ([I.metal, I.metalDark, I.stove, I.stovePipe, I.mapRim, I.burner].some(match)) {
+           mesh.material = new THREE.MeshPhysicalMaterial({
+             color: mat.color,
+             metalness: Math.max(mat.metalness || 0, 0.7),
+             roughness: mat.roughness,
+             bumpMap: _metalNoise,
+             bumpScale: 0.02,
+             clearcoat: 0.4,
+             clearcoatRoughness: 0.3
+           });
+        }
+        // Dense Cotton/Wool Woven Overlay
+        else if ([I.red, I.redBright, I.green, I.mapGreen, I.bedSheet, I.pillow, I.rugRed, I.rugDark].some(match)) {
+           mat.bumpMap = _fabricBump;
+           mat.bumpScale = 0.08;
+           mat.roughness = 1.0;
+           mat.needsUpdate = true;
+        }
+      }
+    });
+  }, []);
+
+  return (
+    <group ref={groupRef}>
+      {/* Warm interior lighting */}
+      <pointLight position={[0, y + 2.5, 0]} intensity={0.8} color="#FFD090" distance={6} decay={2} />
+      <pointLight position={[-1.9, y + 1.2, -1.9]} intensity={0.3} color="#FFC060" distance={3} decay={2} />
+
+      {/* Floor planking */}
+      <FloorPlanking y={y} size={size} />
+
+      {/* Furniture pieces */}
+      <FireFinder y={y} />
+      <DeskArea y={y} />
+      <BedArea y={y} />
+      <WoodStove y={y} />
+      <KitchenCounter y={y} />
+      <MiniFridge y={y} />
+      <FireExtinguisher y={y} />
+      <Dustbin y={y} />
+      <WallClock y={y} />
+      <Posters y={y} />
+    </group>
+  );
+};
 export default CabinInterior;

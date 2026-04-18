@@ -2,6 +2,7 @@ import React, { useRef, useMemo } from 'react';
 import { useScroll } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import CabinInterior from './CabinInterior';
 
 /**
  * Procedural Firewatch-style watchtower.
@@ -479,7 +480,7 @@ const Cabin = ({ y, size, doorRef }: {
   const wallThickness = 0.08;
 
   // Sill height (bottom solid part below windows)
-  const sillHeight = 0.6;
+  const sillHeight = 1.0;
   // Header height (solid part above windows)
   const headerHeight = 0.4;
   // Window area
@@ -654,6 +655,9 @@ const Cabin = ({ y, size, doorRef }: {
         <boxGeometry args={[size - 0.1, 0.05, size - 0.1]} />
         <meshStandardMaterial color={WOOD_PLANK} roughness={0.95} />
       </mesh>
+
+      {/* === INTERIOR FURNITURE === */}
+      <CabinInterior y={y} size={size} />
     </group>
   );
 };

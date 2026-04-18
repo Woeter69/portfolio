@@ -26,11 +26,11 @@ const KEYFRAMES = [
   { t: 0.40, pos: [0, -30, -2],  look: [0, -43, -20] },
   { t: 0.50, pos: [0, -43, -8],  look: [0, -43, -25] },
 
-  // Phase 3: Level off at door height, go straight ahead into cabin
-  { t: 0.60, pos: [0, -43, -16], look: [0, -43, -27] },
-  { t: 0.72, pos: [0, -43, -22], look: [0, -43, -27] },
-  { t: 0.85, pos: [0, -43, -24], look: [0, -43, -30] },
-  { t: 1.00, pos: [0, -43, -27], look: [0, -43, -32] },
+  // Phase 3: Enter cabin, settle into corner room view
+  { t: 0.60, pos: [0, -43, -16],     look: [0, -43, -27] },
+  { t: 0.72, pos: [0, -43, -22],     look: [0, -43, -27] },
+  { t: 0.85, pos: [-1, -42.5, -24],  look: [0.5, -43.5, -28] },
+  { t: 1.00, pos: [-1.2, -42, -25],  look: [0.8, -43.8, -27.5] },
 ];
 
 function lerpKeyframes(scroll: number) {

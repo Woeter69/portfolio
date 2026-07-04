@@ -129,7 +129,7 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
       // Two-Stage Cinematic Sitting Down Animation
       sitProgress.current = THREE.MathUtils.damp(sitProgress.current, 1.0, 3.0, delta);
 
-      const chairStandPos = new THREE.Vector3(1.85, -42.1, -23.55); // Stage 1: Standing in front of the chair
+      const chairStandPos = new THREE.Vector3(1.85, -42.1, -23.65); // Stage 1: Standing in front of the chair
       const typingSeatPos = new THREE.Vector3(1.85, -42.52, -23.28); // Stage 2: Seated down & leaning over keyboard
       const targetLook = new THREE.Vector3(1.85, -42.00, -23.85); // Looking directly at center of keyboard/paper
 
@@ -159,6 +159,12 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
       return;
     } else if (sitProgress.current > 0) {
       sitProgress.current = 0;
+      // When exiting the typewriter, stand the player up cleanly outside the desk collision box!
+      const standOutPos = new THREE.Vector3(1.85, -42.1, -23.65);
+      camera.position.copy(standOutPos);
+      smoothPos.current.copy(standOutPos);
+      hasWalkedPos.current.copy(standOutPos);
+      hasWalkedFlag.current = true;
     }
 
     // 1) Handle First-Person Active Execution

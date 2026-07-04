@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { PointerLockControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { useScrollStore } from '../../stores';
+import { useScrollStore, useInteractionStore } from '../../stores';
 
 interface PlayerControllerProps {
   onUnlock?: () => void;
@@ -14,6 +14,7 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
   const controlsRef = useRef<any>(null);
   const setIsExploreMode = useScrollStore((state) => state.setExploreMode);
   const isExploreMode = useScrollStore((state) => state.isExploreMode);
+  const focusedProp = useInteractionStore((state) => state.focusedProp);
   const [opacity, setOpacity] = useState(0);
   
   const keys = useRef({ w: false, a: false, s: false, d: false, space: false });
@@ -22,6 +23,8 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
 
   useEffect(() => {
     const onGlobalClick = () => {
+      // If a prop is focused (like the typewriter), prevent pointer lock
+      if (useInteractionStore.getState().focusedProp !== 'none') return;
       // If the cinematic is finished and the text is showing, a click anywhere instantly locks it!
       if (!isExploreMode) controlsRef.current?.lock();
     };
@@ -39,6 +42,13 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
       document.removeEventListener('click', onGlobalClick);
     };
   }, [showButton, isExploreMode]);
+
+  // Force unlock if focused on a prop
+  useEffect(() => {
+    if (focusedProp !== 'none') {
+      controlsRef.current?.unlock();
+    }
+  }, [focusedProp]);
 
   useEffect(() => {
     if (isExploreMode) {
@@ -171,8 +181,8 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
     // 1. Map Table Base: Local [0, 0] => World [0, -25]
     handleBox(0, -25, 1.1, 1.1); 
     
-    // 2. Desk: Local [-1.9, -1.9] => World [1.9, -23.1]
-    handleBox(1.9, -23.1, 1.3, 0.8);
+    // 2. Desk: Local [-1.9, -2.15] => World [1.9, -22.85]
+    handleBox(1.9, -22.85, 1.3, 0.8);
     
     // 3. Bed: Local [-2.0, 1.5] => World [2.0, -26.5]
     handleBox(2.0, -26.5, 1.0, 1.9);

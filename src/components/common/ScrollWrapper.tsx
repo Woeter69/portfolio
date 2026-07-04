@@ -4,7 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import PlayerController from './PlayerController';
-import { useScrollStore } from '../../stores';
+import { useScrollStore, useInteractionStore } from '../../stores';
 
 const ExplorePrompt3D = () => {
   const textRef = useRef<any>(null);
@@ -119,8 +119,48 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
   // Smoothed target positions (prevents wobble for scroll path)
   const smoothPos = useRef(new THREE.Vector3(0, 5, 5));
   const smoothLook = useRef(new THREE.Vector3(0, 3, -10));
+  const sitProgress = useRef(0);
+  
+  const focusedProp = useInteractionStore((state) => state.focusedProp);
 
   useFrame((state, delta) => {
+    // 0) OVERRIDE EXCLUSIVE: If the player clicks an interactive terminal, seize camera logic and lock it to the terminal!
+    if (focusedProp === 'typewriter') {
+      // Two-Stage Cinematic Sitting Down Animation
+      sitProgress.current = THREE.MathUtils.damp(sitProgress.current, 1.0, 3.0, delta);
+
+      const chairStandPos = new THREE.Vector3(1.85, -42.1, -23.55); // Stage 1: Standing in front of the chair
+      const typingSeatPos = new THREE.Vector3(1.85, -42.52, -23.28); // Stage 2: Seated down & leaning over keyboard
+      const targetLook = new THREE.Vector3(1.85, -42.00, -23.85); // Looking directly at center of keyboard/paper
+
+      if (sitProgress.current < 0.5) {
+        // Stage 1: Glide to front of chair at standing height
+        const t = sitProgress.current * 2;
+        const eased = t * t * (3 - 2 * t);
+        smoothPos.current.lerp(chairStandPos, eased * Math.min(delta * 6, 1));
+      } else {
+        // Stage 2: Lower into chair and lean forward into typing position
+        const t = (sitProgress.current - 0.5) * 2;
+        const eased = t * t * (3 - 2 * t);
+        const currentTarget = chairStandPos.clone().lerp(typingSeatPos, eased);
+        smoothPos.current.lerp(currentTarget, Math.min(delta * 6, 1));
+      }
+      camera.position.copy(smoothPos.current);
+
+      // Solve singularity constraint: Compute rotation at physical position mapping to target
+      const dummy = new THREE.Object3D();
+      dummy.position.copy(camera.position);
+      dummy.lookAt(targetLook);
+      camera.quaternion.slerp(dummy.quaternion, delta * 6); // Smooth quaternion sweep
+
+      // Keep smooth trackers aligned for when we exit back to the timeline
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+      smoothLook.current.copy(camera.position).add(forward);
+      return;
+    } else if (sitProgress.current > 0) {
+      sitProgress.current = 0;
+    }
+
     // 1) Handle First-Person Active Execution
     if (isExploreMode) {
       if (!hasWalkedFlag.current) hasWalkedFlag.current = true;
@@ -146,8 +186,13 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
     // 2) The explicit user-requested FIX: If they unlock PointerLock while at offset 1.0, 
     // freeze them exactly where they left their physics boundaries! DON'T brutally teleport them back to P5!
     if (offset >= 0.999 && hasWalkedFlag.current) {
-        camera.position.copy(hasWalkedPos.current);
-        camera.quaternion.copy(hasWalkedRot.current);
+        // Gently drift back to the original standing position if they just escaped a terminal
+        camera.position.lerp(hasWalkedPos.current, delta * 6);
+        camera.quaternion.slerp(hasWalkedRot.current, delta * 6);
+        
+        smoothPos.current.copy(camera.position);
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        smoothLook.current.copy(camera.position).add(forward);
         
         // Ensure UI components correctly render the visual state without touching React dependencies per frame
         if (!showController) setShowController(true);

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { useState, useEffect, useRef } from 'react';
+import TypewriterTerminal from './TypewriterTerminal';
 
 /**
  * Firewatch-style cabin interior — all procedural geometry.
@@ -142,7 +143,7 @@ const FireFinder = ({ y }: { y: number }) => {
 const DeskArea = ({ y }: { y: number }) => (
   // Omitted changes, kept same code as original! 
   // For brevity while making the massive edit.
-  <group position={[-1.9, y, -1.9]}>
+  <group position={[-1.9, y, -2.15]}>
     {/* Desk surface */}
     <mesh position={[0, 0.72, 0]}>
       <boxGeometry args={[1.1, 0.05, 0.6]} />
@@ -202,61 +203,8 @@ const DeskArea = ({ y }: { y: number }) => (
       </mesh>
     </group>
 
-    {/* Typewriter - Massive Detail Upgrade */}
-    <group position={[0.05, 0.77, -0.05]}>
-      {/* Main body curved styling */}
-      <mesh position={[0, 0.06, 0]}>
-        <boxGeometry args={[0.38, 0.12, 0.32]} />
-        <meshStandardMaterial color={I.typewriter} roughness={0.8} />
-      </mesh>
-      {/* Upper chassis */}
-      <mesh position={[0, 0.14, -0.08]}>
-        <boxGeometry args={[0.34, 0.08, 0.16]} />
-        <meshStandardMaterial color={I.typewriter} roughness={0.8} />
-      </mesh>
-      {/* Keyboard Slant (Front face) */}
-      <mesh position={[0, 0.05, 0.18]} rotation={[0.4, 0, 0]}>
-        <boxGeometry args={[0.32, 0.05, 0.14]} />
-        <meshStandardMaterial color={I.typewriter} roughness={0.8} />
-      </mesh>
-      {/* Keyboard Step Rows (Stylized low-poly keys) */}
-      {[-0.04, 0.0, 0.04, 0.08].map((z, row) => (
-        <mesh key={`keyrow-${row}`} position={[0, 0.07 + (3 - row) * 0.01, 0.12 + z]} rotation={[0.4, 0, 0]}>
-          <boxGeometry args={[0.26, 0.015, 0.025]} />
-          <meshStandardMaterial color={row === 0 ? "#333" : I.white} roughness={0.6} />
-        </mesh>
-      ))}
-
-      {/* Paper guide/Platen base */}
-      <mesh position={[0, 0.18, -0.08]}>
-        <boxGeometry args={[0.42, 0.05, 0.05]} />
-        <meshStandardMaterial color={I.metalDark} roughness={0.6} />
-      </mesh>
-      {/* Roller (Platen) */}
-      <mesh position={[0, 0.21, -0.08]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.025, 0.025, 0.4, 16]} />
-        <meshStandardMaterial color="#111" roughness={0.8} />
-      </mesh>
-      {/* Platen Knobs */}
-      <mesh position={[-0.22, 0.21, -0.08]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.03, 0.03, 0.03, 12]} />
-        <meshStandardMaterial color={I.metal} />
-      </mesh>
-      <mesh position={[0.22, 0.21, -0.08]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.03, 0.03, 0.03, 12]} />
-        <meshStandardMaterial color={I.metal} />
-      </mesh>
-      {/* Carriage Return Lever */}
-      <mesh position={[-0.18, 0.23, -0.08]} rotation={[0.2, 0.2, 0]}>
-        <cylinderGeometry args={[0.008, 0.008, 0.15, 6]} />
-        <meshStandardMaterial color={I.metal} metalness={0.7} />
-      </mesh>
-      {/* Crisp flat paper jutting up and backwards dynamically out of the platen roller */}
-      <mesh position={[0, 0.32, -0.14]} rotation={[-0.3, 0, 0]}>
-        <planeGeometry args={[0.22, 0.3]} />
-        <meshStandardMaterial color={I.white} side={THREE.DoubleSide} />
-      </mesh>
-    </group>
+    {/* Typewriter - Massive Interactive Detail Upgrade */}
+    <TypewriterTerminal position={[0.05, 0.77, -0.05]} palette={I} />
 
     {/* Desk Lamp - Formally snapped inward onto the table plane to prevent external wall-clipping */}
     <group position={[-0.45, 0.77, -0.15]} rotation={[0, 0.5, 0]}>

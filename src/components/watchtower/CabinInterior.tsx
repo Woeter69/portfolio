@@ -500,7 +500,7 @@ const KitchenCounter = ({ y }: { y: number }) => (
     </group>
 
     {/* Oven built into the counter */}
-    <group position={[-0.31, 0.35, -0.65]}>
+    <group position={[-0.31, 0.35, -0.45]}>
       <mesh>
         <boxGeometry args={[0.02, 0.45, 0.5]} />
         <meshStandardMaterial color={I.metalDark} roughness={0.6} />
@@ -517,11 +517,11 @@ const KitchenCounter = ({ y }: { y: number }) => (
       </mesh>
     </group>
 
-    {/* Drawer fronts (remaining spaces) */}
-    {[-1.0, 0.2, 0.7].map((z, i) => (
+    {/* Drawer fronts (remaining spaces around oven) */}
+    {[-1.00, 0.10, 0.85].map((z, i) => (
       <group key={`drawer-${i}`}>
         <mesh position={[-0.31, 0.65, z]}>
-          <boxGeometry args={[0.01, 0.2, 0.4]} />
+          <boxGeometry args={[0.01, 0.2, i === 2 ? 0.55 : 0.45]} />
           <meshStandardMaterial color={I.cream} roughness={0.8} />
         </mesh>
         <mesh position={[-0.33, 0.65, z]}>
@@ -532,21 +532,21 @@ const KitchenCounter = ({ y }: { y: number }) => (
     ))}
 
     {/* Lower cabinet doors */}
-    {[-1.0, 0.2, 0.7].map((z, i) => (
+    {[-1.00, 0.10, 0.85].map((z, i) => (
       <mesh key={`cab-${i}`} position={[-0.31, 0.25, z]}>
-        <boxGeometry args={[0.01, 0.45, 0.4]} />
+        <boxGeometry args={[0.01, 0.45, i === 2 ? 0.55 : 0.45]} />
         <meshStandardMaterial color={I.cream} roughness={0.85} />
       </mesh>
     ))}
 
     {/* Black built-in electric stovetop base beneath the burners */}
-    <mesh position={[0.075, 0.875, -0.65]}>
+    <mesh position={[0.075, 0.875, -0.45]}>
       <boxGeometry args={[0.35, 0.015, 0.5]} />
       <meshStandardMaterial color="#1A1A1A" roughness={0.4} metalness={0.2} />
     </mesh>
 
     {/* Stovetop burners */}
-    {[[0, 0.89, -0.8], [0.15, 0.89, -0.8], [0, 0.89, -0.5], [0.15, 0.89, -0.5]].map(([x, yy, z], i) => (
+    {[[0, 0.89, -0.6], [0.15, 0.89, -0.6], [0, 0.89, -0.3], [0.15, 0.89, -0.3]].map(([x, yy, z], i) => (
       <mesh key={`burn-${i}`} position={[x, yy, z]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.04, 0.06, 12]} />
         <meshStandardMaterial color={I.redBright} roughness={0.8} side={THREE.DoubleSide} />

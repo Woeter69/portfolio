@@ -17,7 +17,7 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
   const focusedProp = useInteractionStore((state) => state.focusedProp);
   const [opacity, setOpacity] = useState(0);
   
-  const keys = useRef({ w: false, a: false, s: false, d: false, space: false });
+  const keys = useRef({ w: false, a: false, s: false, d: false, space: false, c: false });
   const velocity = useRef(new THREE.Vector3());
   const direction = useRef(new THREE.Vector3());
 
@@ -66,6 +66,7 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
       if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.current.s = true;
       if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.current.d = true;
       if (e.code === 'Space') keys.current.space = true;
+      if (e.code === 'KeyC') keys.current.c = true;
     };
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.current.w = false;
@@ -73,6 +74,7 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
       if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.current.s = false;
       if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.current.d = false;
       if (e.code === 'Space') keys.current.space = false;
+      if (e.code === 'KeyC') keys.current.c = false;
     };
 
     const onWheel = (e: WheelEvent) => {
@@ -102,7 +104,7 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
 
     const effectiveDelta = Math.min(delta, 0.1); 
 
-    const accel = 60.0; // Snappy acceleration
+    const accel = keys.current.c ? 35.0 : 60.0; // Slower stealth movement when crouching
     const deccel = 20.0; // High friction
 
     // Apply friction
@@ -122,23 +124,28 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
     controlsRef.current.moveRight(-velocity.current.x * effectiveDelta);
     controlsRef.current.moveForward(-velocity.current.z * effectiveDelta);
 
-    // ─── Newtonian Vertical Physics (Jumping + Gravity) ───
-    const FLOOR_LEVEL = -42.1;
+    // ─── Newtonian Vertical Physics (Jumping + Gravity + Crouching) ───
+    const targetFloorLevel = keys.current.c ? -42.6 : -42.1;
     
-    // Apply Gravity (Softened further to 2.2x for moon-like hang-time)
-    velocity.current.y -= 9.8 * 2.2 * effectiveDelta; 
-    
-    // Trigger jump if grounded
-    if (keys.current.space && camera.position.y <= FLOOR_LEVEL + 0.05) {
-      velocity.current.y = 5.0; // Jump force proportionately scaled down to match weaker gravity
-    }
-
-    camera.position.y += velocity.current.y * effectiveDelta;
-
-    // Hard floor collision barrier
-    if (camera.position.y < FLOOR_LEVEL) {
+    // If grounded (at or below standing floor -42.1 without upwards jump velocity)
+    if (camera.position.y <= -42.1 && velocity.current.y <= 0.1) {
       velocity.current.y = 0;
-      camera.position.y = FLOOR_LEVEL;
+      camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetFloorLevel, Math.min(effectiveDelta * 14, 1));
+      
+      // Trigger jump if pressing space while grounded and not crouching
+      if (keys.current.space && !keys.current.c) {
+        velocity.current.y = 5.0;
+      }
+    } else {
+      // In mid-air: apply gravity and move
+      velocity.current.y -= 9.8 * 2.2 * effectiveDelta;
+      camera.position.y += velocity.current.y * effectiveDelta;
+      
+      // Don't fall through the target floor
+      if (camera.position.y < targetFloorLevel) {
+        velocity.current.y = 0;
+        camera.position.y = targetFloorLevel;
+      }
     }
 
     // ─── AABB Mathematical Bounds System ───

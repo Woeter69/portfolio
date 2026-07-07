@@ -126,32 +126,22 @@ const ScrollWrapper = ({ children }: ScrollWrapperProps) => {
   useFrame((state, delta) => {
     // 0) OVERRIDE EXCLUSIVE: If the player clicks an interactive terminal, seize camera logic and lock it to the terminal!
     if (focusedProp === 'typewriter') {
-      // Two-Stage Cinematic Sitting Down Animation
-      sitProgress.current = THREE.MathUtils.damp(sitProgress.current, 1.0, 3.0, delta);
+      // Cinematic Sitting Down Animation
+      sitProgress.current = THREE.MathUtils.damp(sitProgress.current, 1.0, 3.5, delta);
 
       const chairStandPos = new THREE.Vector3(1.85, -42.1, -23.65); // Stage 1: Standing in front of the chair
       const typingSeatPos = new THREE.Vector3(1.85, -42.52, -23.28); // Stage 2: Seated down & leaning over keyboard
       const targetLook = new THREE.Vector3(1.85, -42.00, -23.85); // Looking directly at center of keyboard/paper
 
-      if (sitProgress.current < 0.5) {
-        // Stage 1: Glide to front of chair at standing height
-        const t = sitProgress.current * 2;
-        const eased = t * t * (3 - 2 * t);
-        smoothPos.current.lerp(chairStandPos, eased * Math.min(delta * 6, 1));
-      } else {
-        // Stage 2: Lower into chair and lean forward into typing position
-        const t = (sitProgress.current - 0.5) * 2;
-        const eased = t * t * (3 - 2 * t);
-        const currentTarget = chairStandPos.clone().lerp(typingSeatPos, eased);
-        smoothPos.current.lerp(currentTarget, Math.min(delta * 6, 1));
-      }
+      const currentTarget = sitProgress.current < 0.4 ? chairStandPos : typingSeatPos;
+      smoothPos.current.lerp(currentTarget, Math.min(delta * 8, 1));
       camera.position.copy(smoothPos.current);
 
       // Solve singularity constraint: Compute rotation at physical position mapping to target
       const dummy = new THREE.Object3D();
       dummy.position.copy(camera.position);
       dummy.lookAt(targetLook);
-      camera.quaternion.slerp(dummy.quaternion, delta * 6); // Smooth quaternion sweep
+      camera.quaternion.slerp(dummy.quaternion, Math.min(delta * 8, 1));
 
       // Keep smooth trackers aligned for when we exit back to the timeline
       const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);

@@ -74,6 +74,24 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
   useEffect(() => {
     if (!isActive) return;
 
+    const handleOutsideClick = () => {
+      setFocusedProp('none');
+    };
+
+    // Delay listener attachment so initial focus click doesn't close it immediately
+    const timer = setTimeout(() => {
+      window.addEventListener('click', handleOutsideClick);
+    }, 150);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('click', handleOutsideClick);
+    };
+  }, [isActive, setFocusedProp]);
+
+  useEffect(() => {
+    if (!isActive) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setFocusedProp('none');
@@ -194,8 +212,8 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
       }}
     >
       {/* Main body curved styling */}
-      <mesh position={[0, 0.06, 0]}>
-        <boxGeometry args={[0.38, 0.12, 0.32]} />
+      <mesh position={[0, 0.06, -0.05]}>
+        <boxGeometry args={[0.38, 0.12, 0.22]} />
         {/* Adds emissive bloom on hover to indicate interactability */}
         <meshStandardMaterial 
           color={I.typewriter} 
@@ -210,16 +228,17 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
         <meshStandardMaterial color={I.typewriter} roughness={0.8} />
       </mesh>
       {/* Keyboard Slant (Front face) */}
-      <mesh position={[0, 0.05, 0.18]} rotation={[0.4, 0, 0]}>
-        <boxGeometry args={[0.32, 0.05, 0.14]} />
+      <mesh position={[0, 0.05, 0.17]} rotation={[0.4, 0, 0]}>
+        <boxGeometry args={[0.34, 0.05, 0.22]} />
         <meshStandardMaterial color={I.typewriter} roughness={0.8} />
       </mesh>
       
       {/* High-Fidelity Keyboard Typography */}
       {[
-        { zStart: -0.04, string: "QWERTYUIOP", xOffset: -0.108 },
-        { zStart: 0.0, string: "ASDFGHJKL", xOffset: -0.096 },
-        { zStart: 0.04, string: "ZXCVBNM", xOffset: -0.072 },
+        { zStart: -0.06, string: "1234567890", xOffset: -0.108 },
+        { zStart: -0.02, string: "QWERTYUIOP", xOffset: -0.108 },
+        { zStart: 0.02, string: "ASDFGHJKL", xOffset: -0.096 },
+        { zStart: 0.06, string: "ZXCVBNM", xOffset: -0.072 },
       ].map((row, rIdx) => {
         const keys = row.string.split("");
         const spacing = 0.024;
@@ -263,7 +282,7 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
       
       {/* Spacebar */}
       <group 
-        position={[0, 0.08 + (activeKeys.has('SPACE') ? -0.012 : 0), 0.26]} 
+        position={[0, 0.07 + (activeKeys.has('SPACE') ? -0.012 : 0), 0.28]} 
         rotation={[0.4 + (activeKeys.has('SPACE') ? 0.2 : 0), 0, 0]}
       >
         <mesh>

@@ -69,5 +69,12 @@ export default defineConfig([
       // other options...
     },
   },
-])
 ```
+
+## Interactive 3D Firewatch Tower Portfolio
+
+This project is an immersive 3D developer portfolio styled as an atmospheric remote Firewatch Lookout Tower built with **React**, **Three.js / React Three Fiber**, and **Vite**.
+
+### Core Architecture
+- **Interactive First-Person Exploration**: Navigate the watchtower interior and outer catwalks using pointer lock controls (`W/A/S/D` and mouse look).
+- **Procedural PBR Materials**: Custom high-fidelity procedural canvas bump maps and roughness maps for authentic wood grain, woven wool rug fabric, and brushed metal appliances.

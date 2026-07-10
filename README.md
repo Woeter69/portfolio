@@ -78,3 +78,6 @@ This project is an immersive 3D developer portfolio styled as an atmospheric rem
 ### Core Architecture
 - **Interactive First-Person Exploration**: Navigate the watchtower interior and outer catwalks using pointer lock controls (`W/A/S/D` and mouse look).
 - **Procedural PBR Materials**: Custom high-fidelity procedural canvas bump maps and roughness maps for authentic wood grain, woven wool rug fabric, and brushed metal appliances.
+
+### Procedural Audio Engine (Web Audio API)
+- **Zero-Dependency Sound Synthesis**: All interactive environmental audio—including vintage radio lo-fi music channels, mechanical typewriter key acoustics, desk lamp pull-chain clicks, and page ripping sounds—is synthesized dynamically using browser `AudioContext` oscillators and noise generators.

@@ -81,3 +81,7 @@ This project is an immersive 3D developer portfolio styled as an atmospheric rem
 
 ### Procedural Audio Engine (Web Audio API)
 - **Zero-Dependency Sound Synthesis**: All interactive environmental audio—including vintage radio lo-fi music channels, mechanical typewriter key acoustics, desk lamp pull-chain clicks, and page ripping sounds—is synthesized dynamically using browser `AudioContext` oscillators and noise generators.
+
+### Interactive Cabin Props & Evidence Board
+- **Detective Conspiracy Board**: 3D investigation corkboard featuring non-overlapping architectural wood framing, polaroids, topographic blueprints, 3D Catmull-Rom red thread connections, and pushpins.
+- **Firewatch Terminal**: Fully functional typewriter command terminal with automatic page-ripping mechanics for long outputs.

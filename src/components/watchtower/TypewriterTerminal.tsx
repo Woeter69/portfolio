@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Text, Html } from '@react-three/drei';
@@ -200,6 +200,36 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
   const lineCount = history.length + 1;
   const paperShiftY = Math.max(0, lineCount - 11) * 0.015;
 
+  // Dynamic Canvas Texture for Typewriter Readout Label above Typewriter
+  const typewriterLabelTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 768;
+    canvas.height = 144;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, 768, 144);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.beginPath();
+      ctx.roundRect(16, 16, 736, 112, 24);
+      ctx.fill();
+      ctx.strokeStyle = isActive ? '#4ADE80' : '#F4A261';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      const text = isActive
+        ? '⌨️ TERMINAL ACTIVE — PRESS ESC TO EXIT'
+        : '⌨️ TYPEWRITER TERMINAL — CLICK TO TYPE COMMANDS';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 384, 72);
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }, [isActive]);
+
   return (
     <group 
       position={position} 
@@ -211,6 +241,14 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
         if (!isActive) setFocusedProp('typewriter'); 
       }}
     >
+      {/* Floating Readout Popup Display above Typewriter */}
+      {(hovered || isActive) && (
+        <mesh position={[0, 0.48, -0.05]} rotation={[0, 0, 0]}>
+          <planeGeometry args={[0.62, 0.11]} />
+          <meshBasicMaterial map={typewriterLabelTexture} transparent side={THREE.DoubleSide} />
+        </mesh>
+      )}
+
       {/* Main body curved styling */}
       <mesh position={[0, 0.06, -0.05]}>
         <boxGeometry args={[0.38, 0.12, 0.22]} />

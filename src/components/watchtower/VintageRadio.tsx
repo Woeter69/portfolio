@@ -250,28 +250,28 @@ const VintageRadio: React.FC<VintageRadioProps> = ({ y }) => {
   // Dynamic Canvas Texture for Station Readout Label above Radio
   const labelTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 128;
+    canvas.width = 768;
+    canvas.height = 144;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.clearRect(0, 0, 512, 128);
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+      ctx.clearRect(0, 0, 768, 144);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
       ctx.beginPath();
-      ctx.roundRect(16, 16, 480, 96, 20);
+      ctx.roundRect(16, 16, 736, 112, 24);
       ctx.fill();
       ctx.strokeStyle = STATIONS[station].color;
       ctx.lineWidth = 4;
       ctx.stroke();
 
+      const text =
+        station === 0
+          ? '📻 RADIO [OFF] — CLICK TO TUNE'
+          : `📻 ${STATIONS[station].freq} — ${STATIONS[station].name}`;
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 36px monospace';
+      ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(
-        station === 0 ? '📻 RADIO [OFF]' : `📻 ${STATIONS[station].freq} ${STATIONS[station].name}`,
-        256,
-        64
-      );
+      ctx.fillText(text, 384, 72);
     }
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
@@ -297,7 +297,7 @@ const VintageRadio: React.FC<VintageRadioProps> = ({ y }) => {
       {/* Floating Station Readout Display above radio when hovered or playing */}
       {(hovered || station !== 0) && (
         <mesh position={[0, 0.38, 0]} rotation={[0, 0, 0]}>
-          <planeGeometry args={[0.42, 0.11]} />
+          <planeGeometry args={[0.58, 0.11]} />
           <meshBasicMaterial map={labelTexture} transparent side={THREE.DoubleSide} />
         </mesh>
       )}

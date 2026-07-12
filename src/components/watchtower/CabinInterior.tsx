@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import TypewriterTerminal from './TypewriterTerminal';
+import VintageRadio from './VintageRadio';
 
 /**
  * Firewatch-style cabin interior — all procedural geometry.
@@ -949,42 +950,7 @@ const DetectiveBoard = ({ y }: { y: number }) => {
   );
 };
 
-// ─── VINTAGE TWO-WAY / HAM RADIO STATION ───
-const VintageRadio = ({ y }: { y: number }) => (
-  // Placed on the left side of the kitchen counter along the right wall (X = 1.95, Y = y + 0.87, Z = -1.38), safely away from the stove
-  <group position={[1.95, y + 0.87, -1.38]} rotation={[0, -1.35, 0]}>
-    {/* Metal Radio Chassis */}
-    <mesh position={[0, 0.09, 0]}>
-      <boxGeometry args={[0.26, 0.18, 0.16]} />
-      <meshStandardMaterial color="#3E4C38" roughness={0.6} />
-    </mesh>
-    {/* Speaker Grille */}
-    <mesh position={[-0.05, 0.09, 0.081]}>
-      <planeGeometry args={[0.11, 0.12]} />
-      <meshStandardMaterial color="#1A2216" roughness={0.8} />
-    </mesh>
-    {/* Glowing Amber Frequency Dial */}
-    <mesh position={[0.06, 0.12, 0.082]}>
-      <planeGeometry args={[0.08, 0.05]} />
-      <meshStandardMaterial color="#F4A261" emissive="#F4A261" emissiveIntensity={0.6} />
-    </mesh>
-    {/* Tuning Knobs */}
-    <mesh position={[0.04, 0.05, 0.082]} rotation={[Math.PI / 2, 0, 0]}>
-      <cylinderGeometry args={[0.015, 0.015, 0.02, 12]} />
-      <meshStandardMaterial color={I.metalDark} metalness={0.7} />
-    </mesh>
-    {/* Telescopic Antenna extending upward */}
-    <mesh position={[0.1, 0.35, -0.05]}>
-      <cylinderGeometry args={[0.003, 0.005, 0.45, 8]} />
-      <meshStandardMaterial color={I.metal} metalness={0.8} roughness={0.2} />
-    </mesh>
-    {/* Handset microphone */}
-    <mesh position={[-0.16, 0.05, 0.04]}>
-      <boxGeometry args={[0.04, 0.09, 0.03]} />
-      <meshStandardMaterial color="#222222" roughness={0.5} />
-    </mesh>
-  </group>
-);
+
 
 // ─── FLOOR PLANKING ───
 const FloorPlanking = ({ y, size }: { y: number; size: number }) => {

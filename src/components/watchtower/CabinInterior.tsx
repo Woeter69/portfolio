@@ -505,15 +505,24 @@ const KitchenCounter = ({ y }: { y: number }) => (
         <boxGeometry args={[0.02, 0.45, 0.5]} />
         <meshStandardMaterial color={I.metalDark} roughness={0.6} />
       </mesh>
-      {/* Oven window */}
-      <mesh position={[-0.012, -0.05, 0]}>
-        <planeGeometry args={[0.3, 0.45]} />
+      {/* Oven window flush against door face */}
+      <mesh position={[-0.012, -0.03, 0]} rotation={[0, -Math.PI / 2, 0]}>
+        <planeGeometry args={[0.34, 0.26]} />
         <meshStandardMaterial color="#111" roughness={0.1} />
       </mesh>
       {/* Oven Handle */}
-      <mesh position={[-0.02, 0.15, 0]}>
-        <boxGeometry args={[0.02, 0.02, 0.4]} />
-        <meshStandardMaterial color={I.metal} metalness={0.5} roughness={0.3} />
+      <mesh position={[-0.028, 0.14, 0]}>
+        <boxGeometry args={[0.018, 0.018, 0.38]} />
+        <meshStandardMaterial color={I.metal} metalness={0.6} roughness={0.3} />
+      </mesh>
+      {/* Handle mounts */}
+      <mesh position={[-0.018, 0.14, -0.16]}>
+        <boxGeometry args={[0.018, 0.018, 0.02]} />
+        <meshStandardMaterial color={I.metal} metalness={0.5} />
+      </mesh>
+      <mesh position={[-0.018, 0.14, 0.16]}>
+        <boxGeometry args={[0.018, 0.018, 0.02]} />
+        <meshStandardMaterial color={I.metal} metalness={0.5} />
       </mesh>
     </group>
 
@@ -756,7 +765,7 @@ const RedThread = ({ p1, p2, sag = 0.03, color = "#dc2626", thickness = 0.0025 }
     const end = new THREE.Vector3(...p2);
     const mid = start.clone().add(end).multiplyScalar(0.5);
     mid.y -= sag;
-    mid.x += 0.012; // Pull out slightly from board to avoid z-fighting with papers
+    mid.z += 0.015; // Pull out slightly along local +Z toward viewer so thread hangs cleanly in front of papers
     return new THREE.CatmullRomCurve3([start, mid, end]);
   }, [p1[0], p1[1], p1[2], p2[0], p2[1], p2[2], sag]);
 
@@ -768,172 +777,162 @@ const RedThread = ({ p1, p2, sag = 0.03, color = "#dc2626", thickness = 0.0025 }
   );
 };
 
-// ─── DETECTIVE CONSPIRACY BOARD & POSTERS ───
-const Posters = ({ y }: { y: number }) => {
-  // Pin Coordinates for red thread connections
-  const pA: [number, number, number] = [-2.373, y + 2.13, 0.95]; // Top-Left Polaroid
-  const pB: [number, number, number] = [-2.373, y + 2.14, 1.38]; // Top-Center Blueprint
-  const pC: [number, number, number] = [-2.373, y + 2.11, 1.82]; // Top-Right Secret Report
-  const pD: [number, number, number] = [-2.373, y + 1.83, 0.98]; // Mid-Left Topo Map
-  const pE: [number, number, number] = [-2.373, y + 1.89, 1.42]; // Center Hub Anomaly Article
-  const pF: [number, number, number] = [-2.373, y + 1.77, 1.80]; // Mid-Right Sticky Note
-  const pG: [number, number, number] = [-2.373, y + 1.58, 1.10]; // Bottom-Left Lab Card
-  const pH: [number, number, number] = [-2.373, y + 1.57, 1.65]; // Bottom-Right Pink Note
+// ─── DETECTIVE CONSPIRACY BOARD (FLUSH AGAINST BACK WALL AT Z=2.45, DIRECTLY FACING FRONT DOOR WITH 3D EVIDENCE CARDS) ───
+const DetectiveBoard = ({ y }: { y: number }) => {
+  // Back wall inner surface is at Z = 2.46. Board center at Z = 2.45 with rotation [0, 0, 0] faces directly into the room (-Z toward door).
+  // Local pin coordinates relative to corkboard center [0, 0, 0]
+  const pA: [number, number, number] = [-0.46, 0.26, -0.035]; // Top-Left Polaroid Pin
+  const pB: [number, number, number] = [0, 0.28, -0.035];     // Top-Center Blueprint Pin
+  const pC: [number, number, number] = [0.46, 0.24, -0.035];  // Top-Right Secret Report Pin
+  const pD: [number, number, number] = [-0.46, 0.0, -0.035];  // Mid-Left Topo Map Pin
+  const pE: [number, number, number] = [0, 0.0, -0.035];      // Center Hub Article Pin
+  const pF: [number, number, number] = [0.46, -0.05, -0.035]; // Mid-Right Sticky Note Pin
+  const pG: [number, number, number] = [-0.44, -0.26, -0.035];// Bottom-Left Lab Card Pin
+  const pH: [number, number, number] = [0.44, -0.27, -0.035]; // Bottom-Right Pink Note Pin
 
   return (
-    <group>
-      {/* Large Corkboard */}
-      <mesh position={[-2.42, y + 1.8, 1.4]}>
-        <boxGeometry args={[0.02, 0.8, 1.2]} />
-        <meshStandardMaterial color="#B08D57" roughness={0.9} />
+    <group position={[0, y + 1.8, 2.45]} rotation={[0, 0, 0]}>
+      {/* Dedicated spotlight illuminating the Detective Board evidence */}
+      <pointLight position={[0, 0.3, -0.8]} intensity={1.2} color="#FFF5E4" distance={3} decay={2} />
+
+      {/* Large Corkboard Backing */}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[1.36, 0.88, 0.02]} />
+        <meshStandardMaterial color="#B08D57" roughness={0.8} />
       </mesh>
       {/* Corkboard Wood Frame */}
-      <mesh position={[-2.41, y + 1.8, 1.4]}>
-        <boxGeometry args={[0.04, 0.84, 1.24]} />
+      <mesh position={[0, 0, 0.01]}>
+        <boxGeometry args={[1.40, 0.92, 0.04]} />
         <meshStandardMaterial color={I.darkWood} roughness={0.9} />
       </mesh>
-      {/* Corkboard interior masking to create the framed look */}
-      <mesh position={[-2.39, y + 1.8, 1.4]}>
-        <boxGeometry args={[0.02, 0.78, 1.18]} />
-        <meshStandardMaterial color="#9F784B" roughness={1.0} />
+      {/* Corkboard front surface */}
+      <mesh position={[0, 0, -0.012]}>
+        <boxGeometry args={[1.32, 0.84, 0.01]} />
+        <meshStandardMaterial color="#9F784B" roughness={0.9} />
       </mesh>
 
-      {/* ─── EVIDENCE NODES ─── */}
+      {/* ─── VISIBLE 3D SOLID EVIDENCE PICTURES & DOCUMENTS (LOCAL Z = -0.022 ON FRONT OF CORK) ─── */}
       {/* Node A: Polaroid Suspect Photo */}
       <group>
-        <mesh position={[-2.378, y + 2.02, 0.95]} rotation={[0, Math.PI / 2, -0.08]}>
-          <planeGeometry args={[0.22, 0.28]} />
-          <meshStandardMaterial color={I.white} side={THREE.DoubleSide} roughness={0.8} />
+        <mesh position={[-0.46, 0.21, -0.022]} rotation={[0, 0, -0.08]}>
+          <boxGeometry args={[0.22, 0.28, 0.005]} />
+          <meshStandardMaterial color={I.white} roughness={0.6} />
         </mesh>
-        <mesh position={[-2.376, y + 2.05, 0.95]} rotation={[0, Math.PI / 2, -0.08]}>
-          <planeGeometry args={[0.18, 0.18]} />
-          <meshStandardMaterial color="#1e293b" side={THREE.DoubleSide} roughness={0.9} />
+        <mesh position={[-0.46, 0.24, -0.026]} rotation={[0, 0, -0.08]}>
+          <boxGeometry args={[0.18, 0.18, 0.004]} />
+          <meshStandardMaterial color="#1e293b" roughness={0.7} />
         </mesh>
-        {/* Red Pin A */}
-        <mesh position={pA} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.02, 8]} />
+        <mesh position={pA} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.007, 0.007, 0.025, 8]} />
           <meshStandardMaterial color={I.redBright} roughness={0.3} />
         </mesh>
       </group>
 
       {/* Node B: Project Proteus Schematic Blueprint */}
       <group>
-        <mesh position={[-2.378, y + 2.04, 1.38]} rotation={[0, Math.PI / 2, 0.04]}>
-          <planeGeometry args={[0.34, 0.24]} />
-          <meshStandardMaterial color="#1d4ed8" side={THREE.DoubleSide} roughness={0.9} />
+        <mesh position={[0, 0.24, -0.022]} rotation={[0, 0, 0.04]}>
+          <boxGeometry args={[0.34, 0.24, 0.005]} />
+          <meshStandardMaterial color="#1d4ed8" roughness={0.7} />
         </mesh>
-        {/* Schematic white grid markings */}
-        <mesh position={[-2.376, y + 2.04, 1.38]} rotation={[0, Math.PI / 2, 0.04]}>
-          <planeGeometry args={[0.28, 0.18]} />
-          <meshStandardMaterial color="#3b82f6" side={THREE.DoubleSide} wireframe />
+        <mesh position={[0, 0.24, -0.026]} rotation={[0, 0, 0.04]}>
+          <boxGeometry args={[0.28, 0.18, 0.004]} />
+          <meshStandardMaterial color="#93c5fd" wireframe />
         </mesh>
-        {/* Gold Pin B */}
-        <mesh position={pB} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.02, 8]} />
+        <mesh position={pB} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.007, 0.007, 0.025, 8]} />
           <meshStandardMaterial color="#facc15" roughness={0.3} />
         </mesh>
       </group>
 
-      {/* Node C: Top Secret Report */}
+      {/* Node C: Confidential Top Secret Folder */}
       <group>
-        <mesh position={[-2.378, y + 1.98, 1.82]} rotation={[0, Math.PI / 2, -0.05]}>
-          <planeGeometry args={[0.24, 0.30]} />
-          <meshStandardMaterial color="#fef08a" side={THREE.DoubleSide} roughness={0.9} />
+        <mesh position={[0.46, 0.18, -0.022]} rotation={[0, 0, -0.05]}>
+          <boxGeometry args={[0.24, 0.30, 0.005]} />
+          <meshStandardMaterial color="#fef08a" roughness={0.7} />
         </mesh>
-        {/* Red Top Secret Banner */}
-        <mesh position={[-2.376, y + 2.08, 1.82]} rotation={[0, Math.PI / 2, -0.05]}>
-          <planeGeometry args={[0.20, 0.04]} />
-          <meshStandardMaterial color="#dc2626" side={THREE.DoubleSide} />
+        <mesh position={[0.46, 0.28, -0.026]} rotation={[0, 0, -0.05]}>
+          <boxGeometry args={[0.20, 0.04, 0.004]} />
+          <meshStandardMaterial color="#dc2626" />
         </mesh>
-        {/* Red Pin C */}
-        <mesh position={pC} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.02, 8]} />
+        <mesh position={pC} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.007, 0.007, 0.025, 8]} />
           <meshStandardMaterial color={I.redBright} roughness={0.3} />
         </mesh>
       </group>
 
       {/* Node D: Sector 4 Topographic Target Map */}
       <group>
-        <mesh position={[-2.378, y + 1.74, 0.98]} rotation={[0, Math.PI / 2, 0.08]}>
-          <planeGeometry args={[0.28, 0.22]} />
-          <meshStandardMaterial color="#a3e635" side={THREE.DoubleSide} roughness={0.9} />
+        <mesh position={[-0.46, -0.05, -0.022]} rotation={[0, 0, 0.08]}>
+          <boxGeometry args={[0.28, 0.22, 0.005]} />
+          <meshStandardMaterial color="#a3e635" roughness={0.7} />
         </mesh>
-        {/* Red Target Bullseye */}
-        <mesh position={[-2.376, y + 1.74, 0.98]} rotation={[0, Math.PI / 2, 0.08]}>
-          <planeGeometry args={[0.06, 0.06]} />
-          <meshStandardMaterial color="#dc2626" side={THREE.DoubleSide} />
+        <mesh position={[-0.46, -0.05, -0.026]} rotation={[0, 0, 0.08]}>
+          <boxGeometry args={[0.08, 0.08, 0.004]} />
+          <meshStandardMaterial color="#dc2626" />
         </mesh>
-        {/* Blue Pin D */}
-        <mesh position={pD} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.02, 8]} />
+        <mesh position={pD} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.007, 0.007, 0.025, 8]} />
           <meshStandardMaterial color="#3b82f6" roughness={0.3} />
         </mesh>
       </group>
 
-      {/* Node E: Central Hub News Article */}
+      {/* Node E: Central Hub Newspaper Headline Article */}
       <group>
-        <mesh position={[-2.378, y + 1.78, 1.42]} rotation={[0, Math.PI / 2, -0.02]}>
-          <planeGeometry args={[0.30, 0.26]} />
-          <meshStandardMaterial color="#f8fafc" side={THREE.DoubleSide} roughness={0.9} />
+        <mesh position={[0, -0.03, -0.022]} rotation={[0, 0, -0.02]}>
+          <boxGeometry args={[0.32, 0.28, 0.005]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.7} />
         </mesh>
-        {/* Headline stripes */}
-        <mesh position={[-2.376, y + 1.86, 1.42]} rotation={[0, Math.PI / 2, -0.02]}>
-          <planeGeometry args={[0.24, 0.03]} />
-          <meshStandardMaterial color="#0f172a" side={THREE.DoubleSide} />
+        <mesh position={[0, 0.07, -0.026]} rotation={[0, 0, -0.02]}>
+          <boxGeometry args={[0.26, 0.04, 0.004]} />
+          <meshStandardMaterial color="#0f172a" />
         </mesh>
-        {/* Red Pin E */}
-        <mesh position={pE} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.02, 8]} />
+        <mesh position={pE} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.007, 0.007, 0.025, 8]} />
           <meshStandardMaterial color={I.redBright} roughness={0.3} />
         </mesh>
       </group>
 
       {/* Node F: Yellow Sticky Note */}
       <group>
-        <mesh position={[-2.378, y + 1.70, 1.80]} rotation={[0, Math.PI / 2, -0.14]}>
-          <planeGeometry args={[0.18, 0.18]} />
-          <meshStandardMaterial color="#facc15" side={THREE.DoubleSide} roughness={0.9} />
+        <mesh position={[0.46, -0.11, -0.022]} rotation={[0, 0, -0.14]}>
+          <boxGeometry args={[0.18, 0.18, 0.005]} />
+          <meshStandardMaterial color="#facc15" roughness={0.7} />
         </mesh>
-        {/* Green Pin F */}
-        <mesh position={pF} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.02, 8]} />
+        <mesh position={pF} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.007, 0.007, 0.025, 8]} />
           <meshStandardMaterial color="#22c55e" roughness={0.3} />
         </mesh>
       </group>
 
-      {/* Node G: Lab Fingerprint Card */}
+      {/* Node G: Forensic Fingerprint Lab Card */}
       <group>
-        <mesh position={[-2.378, y + 1.52, 1.10]} rotation={[0, Math.PI / 2, -0.06]}>
-          <planeGeometry args={[0.24, 0.16]} />
-          <meshStandardMaterial color="#e2e8f0" side={THREE.DoubleSide} roughness={0.9} />
+        <mesh position={[-0.44, -0.28, -0.022]} rotation={[0, 0, -0.06]}>
+          <boxGeometry args={[0.24, 0.16, 0.005]} />
+          <meshStandardMaterial color="#e2e8f0" roughness={0.7} />
         </mesh>
-        {/* Ink fingerprint spot */}
-        <mesh position={[-2.376, y + 1.52, 1.10]} rotation={[0, Math.PI / 2, -0.06]}>
-          <planeGeometry args={[0.08, 0.10]} />
-          <meshStandardMaterial color="#334155" side={THREE.DoubleSide} />
+        <mesh position={[-0.44, -0.28, -0.026]} rotation={[0, 0, -0.06]}>
+          <boxGeometry args={[0.10, 0.10, 0.004]} />
+          <meshStandardMaterial color="#334155" />
         </mesh>
-        {/* Red Pin G */}
-        <mesh position={pG} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.02, 8]} />
+        <mesh position={pG} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.007, 0.007, 0.025, 8]} />
           <meshStandardMaterial color={I.redBright} roughness={0.3} />
         </mesh>
       </group>
 
       {/* Node H: Pink Evidence Note */}
       <group>
-        <mesh position={[-2.378, y + 1.50, 1.65]} rotation={[0, Math.PI / 2, 0.10]}>
-          <planeGeometry args={[0.22, 0.18]} />
-          <meshStandardMaterial color="#f472b6" side={THREE.DoubleSide} roughness={0.9} />
+        <mesh position={[0.44, -0.29, -0.022]} rotation={[0, 0, 0.10]}>
+          <boxGeometry args={[0.22, 0.18, 0.005]} />
+          <meshStandardMaterial color="#f472b6" roughness={0.7} />
         </mesh>
-        {/* Gold Pin H */}
-        <mesh position={pH} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.006, 0.006, 0.02, 8]} />
+        <mesh position={pH} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.007, 0.007, 0.025, 8]} />
           <meshStandardMaterial color="#facc15" roughness={0.3} />
         </mesh>
       </group>
 
-      {/* ─── 3D CATMULL-ROM RED THREAD CONNECTIONS (WITH GRAVITY SAG) ─── */}
-      {/* Primary Red Investigation Threads radiating from Center Hub E */}
+      {/* ─── 3D CATMULL-ROM RED THREAD CONNECTIONS ACROSS THE EVIDENCE BOARD ─── */}
       <RedThread p1={pA} p2={pE} sag={0.04} color="#dc2626" thickness={0.003} />
       <RedThread p1={pB} p2={pE} sag={0.02} color="#ff1111" thickness={0.0025} />
       <RedThread p1={pC} p2={pE} sag={0.04} color="#dc2626" thickness={0.003} />
@@ -941,22 +940,51 @@ const Posters = ({ y }: { y: number }) => {
       <RedThread p1={pF} p2={pE} sag={0.03} color="#dc2626" />
       <RedThread p1={pG} p2={pE} sag={0.04} color="#ff1111" thickness={0.0025} />
       <RedThread p1={pH} p2={pE} sag={0.03} color="#dc2626" />
-
-      {/* Cross-linking Conspiracy Threads */}
-      <RedThread p1={pA} p2={pD} sag={0.015} color="#eab308" thickness={0.002} /> {/* Yellow accent string */}
+      <RedThread p1={pA} p2={pD} sag={0.015} color="#eab308" thickness={0.002} />
       <RedThread p1={pB} p2={pC} sag={0.02} color="#ff1111" />
-      <RedThread p1={pG} p2={pH} sag={0.02} color="#eab308" thickness={0.002} /> {/* Yellow accent string */}
-      <RedThread p1={pA} p2={pH} sag={0.08} color="#b91c1c" thickness={0.002} /> {/* Long dramatic diagonal */}
-      <RedThread p1={pC} p2={pG} sag={0.08} color="#b91c1c" thickness={0.002} /> {/* Opposite diagonal */}
-
-      {/* Calendar on the other wall */}
-      <mesh position={[-0.6, y + 1.8, 2.45]}>
-        <planeGeometry args={[0.35, 0.45]} />
-        <meshStandardMaterial color={I.white} roughness={0.85} side={THREE.DoubleSide} />
-      </mesh>
+      <RedThread p1={pG} p2={pH} sag={0.02} color="#eab308" thickness={0.002} />
+      <RedThread p1={pA} p2={pH} sag={0.08} color="#b91c1c" thickness={0.002} />
+      <RedThread p1={pC} p2={pG} sag={0.08} color="#b91c1c" thickness={0.002} />
     </group>
   );
 };
+
+// ─── VINTAGE TWO-WAY / HAM RADIO STATION ───
+const VintageRadio = ({ y }: { y: number }) => (
+  // Placed on the desk next to the typewriter (X = -1.35, Y = y + 0.74, Z = -1.82)
+  <group position={[-1.35, y + 0.74, -1.82]} rotation={[0, 0.35, 0]}>
+    {/* Metal Radio Chassis */}
+    <mesh position={[0, 0.09, 0]}>
+      <boxGeometry args={[0.26, 0.18, 0.16]} />
+      <meshStandardMaterial color="#3E4C38" roughness={0.6} />
+    </mesh>
+    {/* Speaker Grille */}
+    <mesh position={[-0.05, 0.09, 0.081]}>
+      <planeGeometry args={[0.11, 0.12]} />
+      <meshStandardMaterial color="#1A2216" roughness={0.8} />
+    </mesh>
+    {/* Glowing Amber Frequency Dial */}
+    <mesh position={[0.06, 0.12, 0.082]}>
+      <planeGeometry args={[0.08, 0.05]} />
+      <meshStandardMaterial color="#F4A261" emissive="#F4A261" emissiveIntensity={0.6} />
+    </mesh>
+    {/* Tuning Knobs */}
+    <mesh position={[0.04, 0.05, 0.082]} rotation={[Math.PI / 2, 0, 0]}>
+      <cylinderGeometry args={[0.015, 0.015, 0.02, 12]} />
+      <meshStandardMaterial color={I.metalDark} metalness={0.7} />
+    </mesh>
+    {/* Telescopic Antenna extending upward */}
+    <mesh position={[0.1, 0.35, -0.05]}>
+      <cylinderGeometry args={[0.003, 0.005, 0.45, 8]} />
+      <meshStandardMaterial color={I.metal} metalness={0.8} roughness={0.2} />
+    </mesh>
+    {/* Handset microphone */}
+    <mesh position={[-0.16, 0.05, 0.04]}>
+      <boxGeometry args={[0.04, 0.09, 0.03]} />
+      <meshStandardMaterial color="#222222" roughness={0.5} />
+    </mesh>
+  </group>
+);
 
 // ─── FLOOR PLANKING ───
 const FloorPlanking = ({ y, size }: { y: number; size: number }) => {
@@ -1107,7 +1135,8 @@ const CabinInterior = ({ y, size }: CabinInteriorProps) => {
       <FireExtinguisher y={y} />
       <Dustbin y={y} />
       <WallClock y={y} />
-      <Posters y={y} />
+      <DetectiveBoard y={y} />
+      <VintageRadio y={y} />
     </group>
   );
 };

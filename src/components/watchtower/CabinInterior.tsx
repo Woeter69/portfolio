@@ -951,8 +951,8 @@ const DetectiveBoard = ({ y }: { y: number }) => {
 
 // ─── VINTAGE TWO-WAY / HAM RADIO STATION ───
 const VintageRadio = ({ y }: { y: number }) => (
-  // Placed on the desk next to the typewriter (X = -1.35, Y = y + 0.74, Z = -1.82)
-  <group position={[-1.35, y + 0.74, -1.82]} rotation={[0, 0.35, 0]}>
+  // Placed on the kitchen counter along the right wall (X = 1.95, Y = y + 0.87, Z = -0.8) overlooking the room
+  <group position={[1.95, y + 0.87, -0.8]} rotation={[0, -1.35, 0]}>
     {/* Metal Radio Chassis */}
     <mesh position={[0, 0.09, 0]}>
       <boxGeometry args={[0.26, 0.18, 0.16]} />

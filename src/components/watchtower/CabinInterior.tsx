@@ -761,9 +761,9 @@ const RedThread = ({ p1, p2, sag = 0.03, color = "#dc2626", thickness = 0.0025 }
   );
 };
 
-// ─── DETECTIVE CONSPIRACY BOARD (FLUSH ALONG BED SIDE LEFT WALL AT X=-2.38, EXACTLY IN THE MIDDLE Z=0) ───
+// ─── DETECTIVE CONSPIRACY BOARD (FLUSH AGAINST BED SIDE LEFT WALL AT X=-2.45, EXACTLY IN THE MIDDLE Z=0) ───
 const DetectiveBoard = ({ y }: { y: number }) => {
-  // Left wall inner surface is at X = -2.46. Board center at X = -2.38, Z = 0 avoids wall clipping and faces directly into the room (+X toward center).
+  // Left wall inner surface is at X = -2.46. Board center at X = -2.45, Z = 0 places the back frame exactly flush against the wall without floating.
   // Local pin coordinates relative to corkboard center [0, 0, 0]
   const pA: [number, number, number] = [-0.46, 0.26, -0.038]; // Top-Left Polaroid Pin
   const pB: [number, number, number] = [0, 0.28, -0.038];     // Top-Center Blueprint Pin
@@ -775,7 +775,7 @@ const DetectiveBoard = ({ y }: { y: number }) => {
   const pH: [number, number, number] = [0.44, -0.27, -0.038]; // Bottom-Right Pink Note Pin
 
   return (
-    <group position={[-2.38, y + 1.8, 0]} rotation={[0, -Math.PI / 2, 0]}>
+    <group position={[-2.45, y + 1.8, 0]} rotation={[0, -Math.PI / 2, 0]}>
       {/* Dedicated spotlight illuminating the Detective Board evidence */}
       <pointLight position={[0, 0.3, -0.8]} intensity={1.2} color="#FFF5E4" distance={3} decay={2} />
 

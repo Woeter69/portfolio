@@ -998,7 +998,6 @@ const ensureTextures = () => {
   _fabricBump.wrapS = THREE.RepeatWrapping; _fabricBump.wrapT = THREE.RepeatWrapping;
   _fabricBump.repeat.set(8, 8); // Tiled extremely dense
 
-  // 3. Procedural Scratched Metal Smudges
   const c3 = document.createElement('canvas');
   c3.width = 256; c3.height = 256;
   const ctx3 = c3.getContext('2d')!;
@@ -1013,6 +1012,35 @@ const ensureTextures = () => {
   _metalNoise = new THREE.CanvasTexture(c3);
   _metalNoise.wrapS = THREE.RepeatWrapping; _metalNoise.wrapT = THREE.RepeatWrapping;
 };
+
+// ─── CEILING PENDANT LIGHT FIXTURE ───
+// Replaces naked/leaking ceiling point light with an authentic downward enamel industrial pendant shade
+const CeilingPendantLight = ({ y }: { y: number }) => (
+  <group position={[0, y + 2.65, 0]}>
+    {/* Ceiling Mount Flange */}
+    <mesh position={[0, 0.25, 0]}>
+      <cylinderGeometry args={[0.12, 0.12, 0.04, 12]} />
+      <meshStandardMaterial color={I.metalDark} roughness={0.6} />
+    </mesh>
+    {/* Downward Conduit Rod */}
+    <mesh position={[0, 0.1, 0]}>
+      <cylinderGeometry args={[0.015, 0.015, 0.3, 8]} />
+      <meshStandardMaterial color={I.metalDark} roughness={0.5} />
+    </mesh>
+    {/* Enamel Industrial Dome Shade (pointing down) */}
+    <mesh position={[0, -0.05, 0]}>
+      <coneGeometry args={[0.35, 0.16, 16, 1, true]} />
+      <meshStandardMaterial color={I.stove} roughness={0.6} side={THREE.DoubleSide} />
+    </mesh>
+    {/* Warm Glowing Edison Bulb inside Dome */}
+    <mesh position={[0, -0.08, 0]}>
+      <sphereGeometry args={[0.05, 12, 12]} />
+      <meshStandardMaterial color="#FFE5B4" emissive="#FFC870" emissiveIntensity={1.5} roughness={0.2} />
+    </mesh>
+    {/* Downward warm cabin illumination (distance bounded so it never leaks onto outside roof) */}
+    <pointLight position={[0, -0.12, 0]} intensity={0.75} color="#FFD090" distance={3.8} decay={2} />
+  </group>
+);
 
 interface CabinInteriorProps {
   y: number;
@@ -1067,8 +1095,8 @@ const CabinInterior = ({ y, size }: CabinInteriorProps) => {
 
   return (
     <group ref={groupRef}>
-      {/* Warm interior lighting */}
-      <pointLight position={[0, y + 2.5, 0]} intensity={0.8} color="#FFD090" distance={6} decay={2} />
+      {/* Authentic Industrial Ceiling Pendant Shade Fixture */}
+      <CeilingPendantLight y={y} />
       <pointLight position={[-1.9, y + 1.2, -1.9]} intensity={0.3} color="#FFC060" distance={3} decay={2} />
 
       {/* Floor planking */}

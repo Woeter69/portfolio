@@ -43,13 +43,17 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
     };
   }, [showButton, isExploreMode]);
 
-  // Force unlock and exit explore mode if focused on a prop
+  // Unlock pointer lock when focused on a prop, and re-lock automatically when exiting prop focus
   useEffect(() => {
     if (focusedProp !== 'none') {
       controlsRef.current?.unlock();
-      setIsExploreMode(false);
+    } else if (isExploreMode) {
+      const timer = setTimeout(() => {
+        controlsRef.current?.lock();
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [focusedProp, setIsExploreMode]);
+  }, [focusedProp, isExploreMode]);
 
   useEffect(() => {
     if (isExploreMode) {
@@ -204,17 +208,17 @@ export default function PlayerController({ onUnlock, showButton = true }: Player
 
   return (
     <group>
-      {focusedProp === 'none' && (
-        <PointerLockControls 
-          ref={controlsRef} 
-          pointerSpeed={1.5}
-          onLock={() => setIsExploreMode(true)}
-          onUnlock={() => {
+      <PointerLockControls 
+        ref={controlsRef} 
+        pointerSpeed={1.5}
+        onLock={() => setIsExploreMode(true)}
+        onUnlock={() => {
+          if (useInteractionStore.getState().focusedProp === 'none') {
             setIsExploreMode(false);
             if (onUnlock) onUnlock();
-          }} 
-        />
-      )}
+          }
+        }} 
+      />
 
       {!isExploreMode && showButton && (
         <Html center position={[-1.0, -42.4, -24.5]}>

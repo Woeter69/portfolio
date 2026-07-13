@@ -310,23 +310,20 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
       ctx.beginPath();
       ctx.roundRect(16, 16, 736, 112, 24);
       ctx.fill();
-      ctx.strokeStyle = isActive ? '#4ADE80' : '#F4A261';
+      ctx.strokeStyle = '#F4A261';
       ctx.lineWidth = 4;
       ctx.stroke();
 
-      const text = isActive
-        ? '⌨️ TERMINAL ACTIVE — PRESS ESC TO EXIT'
-        : '⌨️ TYPEWRITER TERMINAL — CLICK TO TYPE COMMANDS';
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(text, 384, 72);
+      ctx.fillText('⌨️ TYPEWRITER TERMINAL — CLICK TO TYPE COMMANDS', 384, 72);
     }
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
     return texture;
-  }, [isActive]);
+  }, []);
 
   return (
     <group 
@@ -339,8 +336,8 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
         if (!isActive) setFocusedProp('typewriter'); 
       }}
     >
-      {/* Floating Readout Popup Display above Typewriter */}
-      {(hovered || isActive) && (
+      {/* Floating Readout Popup Display above Typewriter only when idle and hovered */}
+      {hovered && !isActive && (
         <mesh position={[0, 0.48, -0.05]} rotation={[0, 0, 0]}>
           <planeGeometry args={[0.62, 0.11]} />
           <meshBasicMaterial map={typewriterLabelTexture} transparent side={THREE.DoubleSide} />

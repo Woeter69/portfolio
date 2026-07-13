@@ -779,20 +779,31 @@ const DetectiveBoard = ({ y }: { y: number }) => {
       {/* Dedicated spotlight illuminating the Detective Board evidence */}
       <pointLight position={[0, 0.3, -0.8]} intensity={1.2} color="#FFF5E4" distance={3} decay={2} />
 
-      {/* Large Corkboard Backing */}
+      {/* ─── CORKBOARD & 4-PIECE NON-OVERLAPPING WOOD FRAME (ELIMINATES INNER BORDER Z-FIGHTING) ─── */}
+      {/* Corkboard Panel (1.32 x 0.84 x 0.02) */}
       <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[1.36, 0.88, 0.02]} />
-        <meshStandardMaterial color="#B08D57" roughness={0.8} />
+        <boxGeometry args={[1.32, 0.84, 0.02]} />
+        <meshStandardMaterial color="#9F784B" roughness={0.9} />
       </mesh>
-      {/* Corkboard Wood Frame */}
-      <mesh position={[0, 0, 0.01]}>
-        <boxGeometry args={[1.40, 0.92, 0.04]} />
+      {/* Top Wood Frame Rail */}
+      <mesh position={[0, 0.445, -0.005]}>
+        <boxGeometry args={[1.42, 0.05, 0.03]} />
         <meshStandardMaterial color={I.darkWood} roughness={0.9} />
       </mesh>
-      {/* Corkboard front surface (distinct Z offset to prevent z-fighting) */}
-      <mesh position={[0, 0, -0.015]}>
-        <boxGeometry args={[1.32, 0.84, 0.006]} />
-        <meshStandardMaterial color="#9F784B" roughness={0.9} />
+      {/* Bottom Wood Frame Rail */}
+      <mesh position={[0, -0.445, -0.005]}>
+        <boxGeometry args={[1.42, 0.05, 0.03]} />
+        <meshStandardMaterial color={I.darkWood} roughness={0.9} />
+      </mesh>
+      {/* Left Wood Frame Rail */}
+      <mesh position={[-0.685, 0, -0.005]}>
+        <boxGeometry args={[0.05, 0.84, 0.03]} />
+        <meshStandardMaterial color={I.darkWood} roughness={0.9} />
+      </mesh>
+      {/* Right Wood Frame Rail */}
+      <mesh position={[0.685, 0, -0.005]}>
+        <boxGeometry args={[0.05, 0.84, 0.03]} />
+        <meshStandardMaterial color={I.darkWood} roughness={0.9} />
       </mesh>
 
       {/* ─── VISIBLE 3D SOLID EVIDENCE PICTURES & DOCUMENTS (STRICT Z SEPARATION) ─── */}

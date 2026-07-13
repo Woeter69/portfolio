@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import TypewriterTerminal from './TypewriterTerminal';
 import VintageRadio from './VintageRadio';
+import DeskLamp from './DeskLamp';
 
 /**
  * Firewatch-style cabin interior — all procedural geometry.
@@ -207,26 +208,8 @@ const DeskArea = ({ y }: { y: number }) => (
     {/* Typewriter - Massive Interactive Detail Upgrade */}
     <TypewriterTerminal position={[0.05, 0.77, -0.05]} palette={I} />
 
-    {/* Desk Lamp - Formally snapped inward onto the table plane to prevent external wall-clipping */}
-    <group position={[-0.45, 0.77, -0.15]} rotation={[0, 0.5, 0]}>
-      {/* Base */}
-      <mesh position={[0, 0.03, 0]}>
-        <cylinderGeometry args={[0.06, 0.07, 0.06, 8]} />
-        <meshStandardMaterial color={I.lamp} roughness={0.7} />
-      </mesh>
-      {/* Arm */}
-      <mesh position={[0.05, 0.18, 0]} rotation={[0, 0, -0.3]}>
-        <cylinderGeometry args={[0.012, 0.012, 0.3, 5]} />
-        <meshStandardMaterial color={I.lamp} roughness={0.6} />
-      </mesh>
-      {/* Shade */}
-      <mesh position={[0.1, 0.32, 0]} rotation={[0, 0, -0.3]}>
-        <coneGeometry args={[0.08, 0.1, 8, 1, true]} />
-        <meshStandardMaterial color={I.redBright} roughness={0.7} side={THREE.DoubleSide} />
-      </mesh>
-      {/* Light Bulb / Glow */}
-      <pointLight position={[0.1, 0.26, 0]} distance={1.5} intensity={0.8} color="#FFD1A3" decay={2} />
-    </group>
+    {/* Interactive Toggleable Desk Lamp */}
+    <DeskLamp position={[-0.45, 0.77, -0.15]} rotation={[0, 0.5, 0]} palette={I} />
 
     {/* Chair */}
     <group position={[0, 0, 0.55]} rotation={[0, Math.PI, 0]}>

@@ -761,21 +761,21 @@ const RedThread = ({ p1, p2, sag = 0.03, color = "#dc2626", thickness = 0.0025 }
   );
 };
 
-// ─── DETECTIVE CONSPIRACY BOARD (FLUSH AGAINST BED SIDE LEFT WALL AT X=-2.45, EXACTLY IN THE MIDDLE Z=0) ───
+// ─── DETECTIVE CONSPIRACY BOARD (FLUSH ALONG BED SIDE LEFT WALL AT X=-2.38, EXACTLY IN THE MIDDLE Z=0) ───
 const DetectiveBoard = ({ y }: { y: number }) => {
-  // Left wall inner surface is at X = -2.46. Board center at X = -2.45, Z = 0 with rotation [0, -Math.PI / 2, 0] faces directly into the room (+X toward center).
+  // Left wall inner surface is at X = -2.46. Board center at X = -2.38, Z = 0 avoids wall clipping and faces directly into the room (+X toward center).
   // Local pin coordinates relative to corkboard center [0, 0, 0]
-  const pA: [number, number, number] = [-0.46, 0.26, -0.035]; // Top-Left Polaroid Pin
-  const pB: [number, number, number] = [0, 0.28, -0.035];     // Top-Center Blueprint Pin
-  const pC: [number, number, number] = [0.46, 0.24, -0.035];  // Top-Right Secret Report Pin
-  const pD: [number, number, number] = [-0.46, 0.0, -0.035];  // Mid-Left Topo Map Pin
-  const pE: [number, number, number] = [0, 0.0, -0.035];      // Center Hub Article Pin
-  const pF: [number, number, number] = [0.46, -0.05, -0.035]; // Mid-Right Sticky Note Pin
-  const pG: [number, number, number] = [-0.44, -0.26, -0.035];// Bottom-Left Lab Card Pin
-  const pH: [number, number, number] = [0.44, -0.27, -0.035]; // Bottom-Right Pink Note Pin
+  const pA: [number, number, number] = [-0.46, 0.26, -0.038]; // Top-Left Polaroid Pin
+  const pB: [number, number, number] = [0, 0.28, -0.038];     // Top-Center Blueprint Pin
+  const pC: [number, number, number] = [0.46, 0.24, -0.038];  // Top-Right Secret Report Pin
+  const pD: [number, number, number] = [-0.46, 0.0, -0.038];  // Mid-Left Topo Map Pin
+  const pE: [number, number, number] = [0, 0.0, -0.038];      // Center Hub Article Pin
+  const pF: [number, number, number] = [0.46, -0.05, -0.038]; // Mid-Right Sticky Note Pin
+  const pG: [number, number, number] = [-0.44, -0.26, -0.038];// Bottom-Left Lab Card Pin
+  const pH: [number, number, number] = [0.44, -0.27, -0.038]; // Bottom-Right Pink Note Pin
 
   return (
-    <group position={[-2.45, y + 1.8, 0]} rotation={[0, -Math.PI / 2, 0]}>
+    <group position={[-2.38, y + 1.8, 0]} rotation={[0, -Math.PI / 2, 0]}>
       {/* Dedicated spotlight illuminating the Detective Board evidence */}
       <pointLight position={[0, 0.3, -0.8]} intensity={1.2} color="#FFF5E4" distance={3} decay={2} />
 
@@ -789,21 +789,21 @@ const DetectiveBoard = ({ y }: { y: number }) => {
         <boxGeometry args={[1.40, 0.92, 0.04]} />
         <meshStandardMaterial color={I.darkWood} roughness={0.9} />
       </mesh>
-      {/* Corkboard front surface */}
-      <mesh position={[0, 0, -0.012]}>
-        <boxGeometry args={[1.32, 0.84, 0.01]} />
+      {/* Corkboard front surface (distinct Z offset to prevent z-fighting) */}
+      <mesh position={[0, 0, -0.015]}>
+        <boxGeometry args={[1.32, 0.84, 0.006]} />
         <meshStandardMaterial color="#9F784B" roughness={0.9} />
       </mesh>
 
-      {/* ─── VISIBLE 3D SOLID EVIDENCE PICTURES & DOCUMENTS (LOCAL Z = -0.022 ON FRONT OF CORK) ─── */}
+      {/* ─── VISIBLE 3D SOLID EVIDENCE PICTURES & DOCUMENTS (STRICT Z SEPARATION) ─── */}
       {/* Node A: Polaroid Suspect Photo */}
       <group>
-        <mesh position={[-0.46, 0.21, -0.022]} rotation={[0, 0, -0.08]}>
-          <boxGeometry args={[0.22, 0.28, 0.005]} />
+        <mesh position={[-0.46, 0.21, -0.024]} rotation={[0, 0, -0.08]}>
+          <boxGeometry args={[0.22, 0.28, 0.003]} />
           <meshStandardMaterial color={I.white} roughness={0.6} />
         </mesh>
-        <mesh position={[-0.46, 0.24, -0.026]} rotation={[0, 0, -0.08]}>
-          <boxGeometry args={[0.18, 0.18, 0.004]} />
+        <mesh position={[-0.46, 0.24, -0.028]} rotation={[0, 0, -0.08]}>
+          <boxGeometry args={[0.18, 0.18, 0.002]} />
           <meshStandardMaterial color="#1e293b" roughness={0.7} />
         </mesh>
         <mesh position={pA} rotation={[Math.PI / 2, 0, 0]}>
@@ -814,12 +814,12 @@ const DetectiveBoard = ({ y }: { y: number }) => {
 
       {/* Node B: Project Proteus Schematic Blueprint */}
       <group>
-        <mesh position={[0, 0.24, -0.022]} rotation={[0, 0, 0.04]}>
-          <boxGeometry args={[0.34, 0.24, 0.005]} />
+        <mesh position={[0, 0.24, -0.024]} rotation={[0, 0, 0.04]}>
+          <boxGeometry args={[0.34, 0.24, 0.003]} />
           <meshStandardMaterial color="#1d4ed8" roughness={0.7} />
         </mesh>
-        <mesh position={[0, 0.24, -0.026]} rotation={[0, 0, 0.04]}>
-          <boxGeometry args={[0.28, 0.18, 0.004]} />
+        <mesh position={[0, 0.24, -0.028]} rotation={[0, 0, 0.04]}>
+          <boxGeometry args={[0.28, 0.18, 0.002]} />
           <meshStandardMaterial color="#93c5fd" wireframe />
         </mesh>
         <mesh position={pB} rotation={[Math.PI / 2, 0, 0]}>
@@ -830,12 +830,12 @@ const DetectiveBoard = ({ y }: { y: number }) => {
 
       {/* Node C: Confidential Top Secret Folder */}
       <group>
-        <mesh position={[0.46, 0.18, -0.022]} rotation={[0, 0, -0.05]}>
-          <boxGeometry args={[0.24, 0.30, 0.005]} />
+        <mesh position={[0.46, 0.18, -0.024]} rotation={[0, 0, -0.05]}>
+          <boxGeometry args={[0.24, 0.30, 0.003]} />
           <meshStandardMaterial color="#fef08a" roughness={0.7} />
         </mesh>
-        <mesh position={[0.46, 0.28, -0.026]} rotation={[0, 0, -0.05]}>
-          <boxGeometry args={[0.20, 0.04, 0.004]} />
+        <mesh position={[0.46, 0.28, -0.028]} rotation={[0, 0, -0.05]}>
+          <boxGeometry args={[0.20, 0.04, 0.002]} />
           <meshStandardMaterial color="#dc2626" />
         </mesh>
         <mesh position={pC} rotation={[Math.PI / 2, 0, 0]}>
@@ -846,12 +846,12 @@ const DetectiveBoard = ({ y }: { y: number }) => {
 
       {/* Node D: Sector 4 Topographic Target Map */}
       <group>
-        <mesh position={[-0.46, -0.05, -0.022]} rotation={[0, 0, 0.08]}>
-          <boxGeometry args={[0.28, 0.22, 0.005]} />
+        <mesh position={[-0.46, -0.05, -0.024]} rotation={[0, 0, 0.08]}>
+          <boxGeometry args={[0.28, 0.22, 0.003]} />
           <meshStandardMaterial color="#a3e635" roughness={0.7} />
         </mesh>
-        <mesh position={[-0.46, -0.05, -0.026]} rotation={[0, 0, 0.08]}>
-          <boxGeometry args={[0.08, 0.08, 0.004]} />
+        <mesh position={[-0.46, -0.05, -0.028]} rotation={[0, 0, 0.08]}>
+          <boxGeometry args={[0.08, 0.08, 0.002]} />
           <meshStandardMaterial color="#dc2626" />
         </mesh>
         <mesh position={pD} rotation={[Math.PI / 2, 0, 0]}>
@@ -862,12 +862,12 @@ const DetectiveBoard = ({ y }: { y: number }) => {
 
       {/* Node E: Central Hub Newspaper Headline Article */}
       <group>
-        <mesh position={[0, -0.03, -0.022]} rotation={[0, 0, -0.02]}>
-          <boxGeometry args={[0.32, 0.28, 0.005]} />
+        <mesh position={[0, -0.03, -0.024]} rotation={[0, 0, -0.02]}>
+          <boxGeometry args={[0.32, 0.28, 0.003]} />
           <meshStandardMaterial color="#f8fafc" roughness={0.7} />
         </mesh>
-        <mesh position={[0, 0.07, -0.026]} rotation={[0, 0, -0.02]}>
-          <boxGeometry args={[0.26, 0.04, 0.004]} />
+        <mesh position={[0, 0.07, -0.028]} rotation={[0, 0, -0.02]}>
+          <boxGeometry args={[0.26, 0.04, 0.002]} />
           <meshStandardMaterial color="#0f172a" />
         </mesh>
         <mesh position={pE} rotation={[Math.PI / 2, 0, 0]}>
@@ -878,8 +878,8 @@ const DetectiveBoard = ({ y }: { y: number }) => {
 
       {/* Node F: Yellow Sticky Note */}
       <group>
-        <mesh position={[0.46, -0.11, -0.022]} rotation={[0, 0, -0.14]}>
-          <boxGeometry args={[0.18, 0.18, 0.005]} />
+        <mesh position={[0.46, -0.11, -0.024]} rotation={[0, 0, -0.14]}>
+          <boxGeometry args={[0.18, 0.18, 0.003]} />
           <meshStandardMaterial color="#facc15" roughness={0.7} />
         </mesh>
         <mesh position={pF} rotation={[Math.PI / 2, 0, 0]}>
@@ -890,12 +890,12 @@ const DetectiveBoard = ({ y }: { y: number }) => {
 
       {/* Node G: Forensic Fingerprint Lab Card */}
       <group>
-        <mesh position={[-0.44, -0.28, -0.022]} rotation={[0, 0, -0.06]}>
-          <boxGeometry args={[0.24, 0.16, 0.005]} />
+        <mesh position={[-0.44, -0.28, -0.024]} rotation={[0, 0, -0.06]}>
+          <boxGeometry args={[0.24, 0.16, 0.003]} />
           <meshStandardMaterial color="#e2e8f0" roughness={0.7} />
         </mesh>
-        <mesh position={[-0.44, -0.28, -0.026]} rotation={[0, 0, -0.06]}>
-          <boxGeometry args={[0.10, 0.10, 0.004]} />
+        <mesh position={[-0.44, -0.28, -0.028]} rotation={[0, 0, -0.06]}>
+          <boxGeometry args={[0.10, 0.10, 0.002]} />
           <meshStandardMaterial color="#334155" />
         </mesh>
         <mesh position={pG} rotation={[Math.PI / 2, 0, 0]}>
@@ -906,8 +906,8 @@ const DetectiveBoard = ({ y }: { y: number }) => {
 
       {/* Node H: Pink Evidence Note */}
       <group>
-        <mesh position={[0.44, -0.29, -0.022]} rotation={[0, 0, 0.10]}>
-          <boxGeometry args={[0.22, 0.18, 0.005]} />
+        <mesh position={[0.44, -0.29, -0.024]} rotation={[0, 0, 0.10]}>
+          <boxGeometry args={[0.22, 0.18, 0.003]} />
           <meshStandardMaterial color="#f472b6" roughness={0.7} />
         </mesh>
         <mesh position={pH} rotation={[Math.PI / 2, 0, 0]}>

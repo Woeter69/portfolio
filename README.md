@@ -85,3 +85,8 @@ This project is an immersive 3D developer portfolio styled as an atmospheric rem
 ### Interactive Cabin Props & Evidence Board
 - **Detective Conspiracy Board**: 3D investigation corkboard featuring non-overlapping architectural wood framing, polaroids, topographic blueprints, 3D Catmull-Rom red thread connections, and pushpins.
 - **Firewatch Terminal**: Fully functional typewriter command terminal with automatic page-ripping mechanics for long outputs.
+
+### Navigation & Controls Reference
+- **Move / Look**: Press `W / A / S / D` or arrow keys to move around the cabin interior and catwalk. Move your mouse to aim and look around.
+- **Interact**: Click on interactive objects (Vintage Radio, Typewriter Terminal, Desk Lamp, Detective Board) to inspect or toggle state.
+- **Exit Interaction**: Press `Escape` to leave an interactive prop view while retaining first-person exploration controls.

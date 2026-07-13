@@ -16,7 +16,7 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
   
   // Real-time terminal history buffer & active line input
   const [history, setHistory] = useState<string[]>([
-    "LITWIZ OS v1.0.4",
+    "FIREWATCH STATION #04 LOG",
     "System initialization complete.",
     "Guest credentials verified.",
     "",
@@ -36,6 +36,92 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
   const flyingMatRef = useRef<THREE.MeshStandardMaterial>(null);
   const flyingTextRef = useRef<any>(null);
 
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  const getAudioCtx = () => {
+    try {
+      const ctx =
+        audioCtxRef.current ||
+        new (window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      audioCtxRef.current = ctx;
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    } catch {
+      return null;
+    }
+  };
+
+  // Mechanical Typewriter Key Strike Clack
+  const playKeyStrikeSound = () => {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(650, now);
+      osc.frequency.exponentialRampToValueAtTime(180, now + 0.025);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.025);
+    } catch {}
+  };
+
+  // Classic Typewriter Carriage Return Bell Ring
+  const playCarriageReturnSound = () => {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1420, now);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    } catch {}
+  };
+
+  // Crisp Paper Rip Tear Sound
+  const playPaperRipSound = () => {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const bufferSize = ctx.sampleRate * 0.16;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(2200, now);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(now);
+      noise.stop(now + 0.16);
+    } catch {}
+  };
+
   // Blinking cursor
   useEffect(() => {
     const timer = setInterval(() => setShowCursor((prev) => !prev), 500);
@@ -43,24 +129,22 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
   }, []);
 
   useFrame((_, delta) => {
-    if (flyingPage && flyingGroupRef.current && flyingMatRef.current && flyingTextRef.current) {
-      // Ejection physics: Shoot UP, BACK, and SPIN backward
-      flyingGroupRef.current.position.y += delta * 1.5;
-      flyingGroupRef.current.position.z -= delta * 1.0;
-      flyingGroupRef.current.rotation.x -= delta * 2.5;
-      
-      // Fade out
-      flyingMatRef.current.opacity -= delta * 1.0;
-      
-      if (flyingTextRef.current.material) {
-        flyingTextRef.current.material.opacity = flyingMatRef.current.opacity;
-        flyingTextRef.current.material.transparent = true;
-      }
+    if (!flyingPage || !flyingGroupRef.current || !flyingMatRef.current) return;
+    
+    // Eject upwards & spin
+    flyingGroupRef.current.position.y += delta * 2.5;
+    flyingGroupRef.current.position.z += delta * 0.8;
+    flyingGroupRef.current.rotation.x += delta * 1.5;
+    flyingGroupRef.current.rotation.z += delta * 0.5;
 
-      // GC when fully faded
-      if (flyingMatRef.current.opacity <= 0) {
-        setFlyingPage(null);
-      }
+    // Fade opacity gracefully out
+    flyingMatRef.current.opacity = Math.max(0, flyingMatRef.current.opacity - delta * 0.8);
+    if (flyingTextRef.current && flyingTextRef.current.fillOpacity !== undefined) {
+      flyingTextRef.current.fillOpacity = flyingMatRef.current.opacity;
+    }
+
+    if (flyingMatRef.current.opacity <= 0) {
+      setFlyingPage(null);
     }
   });
 
@@ -122,13 +206,14 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
       }, 100);
 
       if (e.key === 'Backspace') {
+        playKeyStrikeSound();
         setCurrentInput(prev => prev.length > 0 ? prev.slice(0, -1) : prev);
       } else if (e.key === 'Enter') {
         const cmd = currentInput.trim().toLowerCase();
-        const newHistory = [...history, "> " + currentInput];
+        let cmdOutputLines: string[] = [];
 
         if (cmd === 'help') {
-          newHistory.push(
+          cmdOutputLines = [
             "AVAILABLE COMMANDS:",
             "  about    - Bio & Background",
             "  skills   - Technical Arsenal",
@@ -137,57 +222,70 @@ const TypewriterTerminal = ({ position = [0, 0, 0], rotation = [0, 0, 0], palett
             "  clear    - Clear paper buffer",
             "  exit     - Leave terminal",
             ""
-          );
+          ];
         } else if (cmd === 'about') {
-          newHistory.push(
+          cmdOutputLines = [
             "Woeter: Full-Stack & 3D Developer.",
             "Crafting immersive web experiences",
             "with React, Three.js, & TypeScript.",
             ""
-          );
+          ];
         } else if (cmd === 'skills') {
-          newHistory.push(
+          cmdOutputLines = [
             "Core: TypeScript, JavaScript, HTML/CSS",
             "Web: React 19, Next.js, Vite, Tailwind",
             "3D: Three.js, R3F, GSAP, Blender",
             ""
-          );
+          ];
         } else if (cmd === 'projects') {
-          newHistory.push(
+          cmdOutputLines = [
             "1. Proteus - Materials science pipeline",
             "2. Gifted India - AI Grader platform",
             "3. Firewatch Portfolio - 3D interactive site",
             ""
-          );
+          ];
         } else if (cmd === 'contact') {
-          newHistory.push(
+          cmdOutputLines = [
             "GitHub: github.com/Woeter69",
             "Email: contact@woeter.dev",
             ""
-          );
+          ];
         } else if (cmd === 'clear') {
-          setHistory(["LITWIZ OS v1.0.4 - Cleared", ""]);
+          playPaperRipSound();
+          const lineCountClear = history.length + 1;
+          const shiftSnipClear = Math.max(0, lineCountClear - 11) * 0.015;
+          setFlyingPage({ text: history.join('\n'), shiftY: shiftSnipClear });
+          setHistory(["FIREWATCH STATION #04 LOG - Cleared", ""]);
           setCurrentInput("");
           return;
         } else if (cmd === 'exit' || cmd === 'quit') {
+          playCarriageReturnSound();
           setFocusedProp('none');
           return;
         } else if (cmd !== '') {
-          newHistory.push(`Command '${cmd}' not recognized.`, "Type 'help' for commands.", "");
+          cmdOutputLines = [`Command '${cmd}' not recognized.`, "Type 'help' for commands.", ""];
         } else {
-          newHistory.push("");
+          cmdOutputLines = [""];
         }
 
-        // Physical Line Limit Trigger!
-        if (newHistory.length >= 20) {
-          const shiftSnip = Math.max(0, newHistory.length - 11) * 0.015;
-          setFlyingPage({ text: newHistory.join('\n'), shiftY: shiftSnip });
-          setHistory(["> " + cmd, ""]);
+        const projectedLineCount = history.length + 1 + cmdOutputLines.length;
+
+        // If the new command + output would exceed 11 lines on the current paper,
+        // rip the paper off and start a clean new sheet!
+        if (projectedLineCount >= 11 && history.length > 0) {
+          playPaperRipSound();
+          const lineCountCurr = history.length + 1;
+          const shiftSnip = Math.max(0, lineCountCurr - 11) * 0.015;
+          setFlyingPage({ text: history.join('\n'), shiftY: shiftSnip });
+          setHistory(["> " + currentInput, ...cmdOutputLines]);
         } else {
-          setHistory(newHistory);
+          playCarriageReturnSound();
+          setHistory([...history, "> " + currentInput, ...cmdOutputLines]);
         }
+
         setCurrentInput("");
       } else if (e.key.length === 1) {
+        playKeyStrikeSound();
         setCurrentInput(prev => prev + e.key);
       }
     };
